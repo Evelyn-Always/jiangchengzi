@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>回顾总结 — 词学研习</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;300;400;500;600;700;900&family=Ma+Shan+Zheng&display=swap');
+        :root{--ink-black:#1a1a1a;--ink-dark:#2c2c2c;--ink-gray:#555;--ink-light:#888;--paper:#f5f0e8;--seal-red:#c23a2b}
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink-black);overflow-x:hidden}
+
+        nav{position:fixed;top:0;left:0;width:100%;z-index:9000;background:rgba(26,26,26,.95);backdrop-filter:blur(15px);box-shadow:0 2px 30px rgba(0,0,0,.3);padding:.6rem 0}
+        nav .nav-inner{max-width:1400px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between}
+        nav .logo{font-family:'Ma Shan Zheng',cursive;font-size:1.6rem;color:var(--paper);text-decoration:none;display:flex;align-items:center;gap:.5rem}
+        nav .logo .seal-sm{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:2px solid var(--seal-red);color:var(--seal-red);font-size:.9rem}
+        nav ul{display:flex;list-style:none;gap:.3rem}
+        nav ul li a{color:rgba(245,240,232,.7);text-decoration:none;font-size:.9rem;padding:.5rem 1rem;border-radius:4px;transition:.3s;position:relative}
+        nav ul li a:hover,nav ul li a.active{color:var(--paper);background:rgba(245,240,232,.08)}
+        nav ul li a.active::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:20px;height:2px;background:var(--seal-red)}
+        .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer}
+        .hamburger span{width:25px;height:2px;background:var(--paper);transition:.3s}
+
+        /* 1. 第一屏：去掉底部的死黑过渡 */
+        .page-hero {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            background-color: var(--ink-black);
+            /* 这里只保留淡淡的压暗，不再变纯黑 */
+            background-image:
+                linear-gradient(to bottom, rgba(26, 26, 26, 0.2) 0%, rgba(26, 26, 26, 0.4) 100%),
+                url('sum1.png');
+            background-size: cover;
+            background-position: center top;
+            background-repeat: no-repeat;
+        }
+
+        /* 2. 保留原有墨晕效果并稍微加强 */
+        .page-hero .ink-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(ellipse at 30% 50%, rgba(139,37,0,0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 50%, rgba(46,74,58,0.12) 0%, transparent 50%);
+            z-index: 0;
+        }
+
+        /* 3. 保留巨大的背景字 */
+        .page-hero::before {
+            content: '结'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            font-family: 'Ma Shan Zheng', cursive; font-size: 40vw; color: rgba(245,240,232,0.04);
+            pointer-events: none; z-index: 0;
+        }
+
+        /* 4. 给文字增加阴影，使其在背景图上具有高级悬浮感并保证清晰度 */
+        .page-hero-content { position: relative; z-index: 1; padding: 2rem; }
+
+        .page-hero-content .label {
+            display: inline-block; font-size: .8rem; letter-spacing: 6px;
+            color: rgba(245,240,232,0.7); /* 调亮文字 */
+            border: 1px solid rgba(245,240,232,0.3); padding: .3rem 1.2rem; margin-bottom: 1.5rem;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5); /* 增加阴影 */
+        }
+
+        .page-hero-content h1 {
+            font-family: 'Ma Shan Zheng', cursive; font-size: clamp(2.5rem,6vw,5rem); color: var(--paper);
+            margin-bottom: 1rem;
+            text-shadow: 0 5px 20px rgba(0,0,0,0.6); /* 强烈阴影突出大标题 */
+        }
+
+        .page-hero-content p {
+            color: rgba(245,240,232,0.85); /* 调亮文字 */
+            font-size: 1.1rem; max-width: 600px; margin: 0 auto; line-height: 1.8;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.7); /* 增加阴影 */
+        }
+
+        .section-header{text-align:center;margin-bottom:4rem}
+        .section-header .label{display:inline-block;font-size:.8rem;letter-spacing:6px;color:var(--ink-light);border:1px solid rgba(0,0,0,.1);padding:.3rem 1.2rem;margin-bottom:1.5rem}
+        .section-header h2{font-family:'Ma Shan Zheng',cursive;font-size:clamp(2rem,4vw,3rem);margin-bottom:1rem}
+        .section-header .divider{width:60px;height:2px;background:var(--seal-red);margin:0 auto}
+
+        /* ================== 左右双栏：诗词与精要 ================== */
+        .combined-learning-section {
+            padding: 6rem 2rem;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .combined-layout {
+            display: grid;
+            grid-template-columns: 4.5fr 5.5fr;
+            gap: 3rem;
+            /* 关键修改 1：改成 stretch，强制左右两栏等高 */
+            align-items: stretch;
+        }
+
+        /* 左侧容器继承高度 */
+        .left-poem-col, .poem-sticky-wrapper {
+            height: 100%;
+        }
+
+        /* 竖排信笺高级排版 */
+        .poem-box {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            /* 关键修改 2：高度设为 100%，彻底撑满，与右侧平齐 */
+            height: 100%;
+            /* 关键修改 3：使用 flex 布局，让诗词在变高的信笺中完美居中 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 4rem 3rem;
+            background: linear-gradient(135deg, #fdfbf7 0%, #f3ede1 100%);
+            border-radius: 4px;
+            box-shadow:
+                0 15px 35px rgba(0,0,0,0.08),
+                inset 0 0 0 1px rgba(194,58,43,0.3),
+                inset 0 0 0 6px #fdfbf7,
+                inset 0 0 0 7px rgba(194,58,43,0.2);
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+        .poem-watermark {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-family: 'Ma Shan Zheng', cursive; font-size: 18vw;
+            color: rgba(194,58,43,0.03); pointer-events: none; z-index: 0; white-space: nowrap;
+        }
+        .poem-content-vertical {
+            position: relative; z-index: 1; display: flex; flex-direction: row-reverse;
+            align-items: flex-start; justify-content: center; gap: 2rem;
+        }
+        .poem-header { writing-mode: vertical-rl; display: flex; align-items: center; }
+        .poem-header h3 { font-family: 'Ma Shan Zheng', cursive; font-size: 2.2rem; color: var(--ink-black); letter-spacing: 8px; margin-left: 1.5rem; }
+        .poem-header .author { font-size: 1rem; color: var(--ink-gray); letter-spacing: 5px; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+        .red-seal {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 26px; height: 26px; border: 2px solid var(--seal-red); color: var(--seal-red);
+            font-size: 0.85rem; font-family: 'Ma Shan Zheng', cursive;
+            writing-mode: horizontal-tb; transform: rotate(-5deg); opacity: 0.85;
+        }
+        .poem-body { writing-mode: vertical-rl; font-size: 1.15rem; color: var(--ink-dark); line-height: 2.2; letter-spacing: 5px; }
+        .poem-body p { margin: 0; }
+        .poem-body .stanza-gap { margin-right: 1.5rem; }
+
+        /* 右侧：精要卡片网格 */
+        .right-recap-col {
+            display: flex;
+            flex-direction: column;
+            margin-top: 0;
+            height: 100%; /* 确保右侧也是 100% */
+        }
+
+        .recap-grid-new {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            height: 100%; /* 让内部网格填充整个右侧高度 */
+        }
+        .recap-card {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(0,0,0,0.06);
+            padding: 2.5rem 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: 0.5s;
+            border-radius: 4px;
+        }
+        .recap-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+            background: var(--seal-red); transform: scaleX(0); transform-origin: left; transition: transform 0.5s;
+        }
+        .recap-card:hover::before { transform: scaleX(1); }
+        .recap-card:hover { transform: translateY(-4px); box-shadow: 0 15px 40px rgba(0,0,0,0.08); background: #fff; }
+        .recap-card .r-num {
+            font-family: 'Ma Shan Zheng', cursive; font-size: 3rem;
+            color: rgba(194,58,43,0.1); position: absolute; top: 1rem; right: 1.5rem;
+            pointer-events: none; transition: 0.4s;
+        }
+        .recap-card:hover .r-num { color: rgba(194,58,43,0.2); transform: scale(1.1); }
+        .recap-card h3 { font-family: 'Ma Shan Zheng', cursive; font-size: 1.4rem; color: var(--ink-dark); margin-bottom: 1rem; }
+        .recap-card p { font-size: 0.9rem; line-height: 2; color: var(--ink-gray); }
+
+        /* 移动端与平板响应式适配 */
+        @media(max-width: 1200px) {
+            .combined-layout {
+                grid-template-columns: 1fr; /* 平板及以下，变为上下排列 */
+                gap: 4rem;
+            }
+            .poem-sticky-wrapper {
+                position: static; /* 取消吸顶 */
+                display: flex;
+                justify-content: center;
+            }
+            .poem-watermark { font-size: 50vw; }
+        }
+        @media(max-width: 768px) {
+            .recap-grid-new { grid-template-columns: 1fr; } /* 手机端卡片变为一列 */
+            .poem-box { padding: 3rem 2rem; }
+            .poem-content-vertical { gap: 2rem; }
+            .poem-header h3 { font-size: 2rem; letter-spacing: 6px; }
+            .poem-body { font-size: 1.1rem; line-height: 2; letter-spacing: 3px; }
+            .poem-body .stanza-gap { margin-right: 1rem; }
+        }
+        @media(max-width: 576px) {
+            .poem-content-vertical, .poem-header, .poem-body {
+                writing-mode: horizontal-tb; flex-direction: column; align-items: center; text-align: center;
+            }
+            .poem-header h3 { margin-left: 0; margin-bottom: 1rem; letter-spacing: 5px; }
+            .poem-header .author { flex-direction: row; margin-bottom: 2rem; }
+            .poem-body p { margin-bottom: 0.5rem; letter-spacing: 2px; }
+            .poem-body .stanza-gap { margin-right: 0; margin-bottom: 1.5rem; }
+        }
+
+        /* 精神风貌 */
+/* ================== 精神风貌：手风琴画卷特效 ================== */
+/* ================== 精神风貌：手风琴画卷特效 ================== */
+.spirit-section {
+    padding: 6rem 2rem;
+    position: relative;
+    overflow: hidden;
+    
+    /* 核心修改：将原本的 background: var(--ink-black); 替换为带遮罩的背景图 */
+    background-image: 
+        /* 第一层：深色渐变遮罩，压暗背景，保证标题和卡片足够突出 */
+        linear-gradient(to bottom, rgba(26,26,26,0.7) 0%, rgba(26,26,26,0.9) 100%),
+        /* 第二层：你的背景图，请替换为你的本地图片路径，例如 url('spirit-bg.jpg') */
+        url('./su6.png'); 
+    
+    background-size: cover;
+    background-position: center;
+    /* 加入这行可以实现高级的视差滚动效果（背景固定，卡片在上面滑过） */
+    background-attachment: fixed; 
+}
+
+/* 保持原本的背景大字“魂”字不变，增加点古风神秘感 */
+.spirit-section::before {
+    content: '魂';
+    position: absolute;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 30vw;
+    color: rgba(245, 240, 232, 0.03); /* 稍微调亮了一点点以适应新背景 */
+    pointer-events: none;
+    z-index: 0;
+}
+
+.spirit-gallery {
+    max-width: 1200px;
+    height: 500px;
+    margin: 0 auto;
+    display: flex;
+    gap: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+
+/* 基础卡片样式与背景图设置 */
+.s-card {
+    flex: 1;
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: flex 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    display: flex;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* 在这里替换为你本地的图片，我暂且用了一些符合意境的高清图作为占位 */
+.card-bg-1 { background-image: url('./su1.jpg'); } /* 连绵水墨山脉 */
+.card-bg-2 { background-image: url('./su2.png'); } /* 苍茫林海猎场 */
+.card-bg-3 { background-image: url('./su3.png'); } /* 傲雪寒冬 */
+.card-bg-4 { background-image: url('./su4.png'); } /* 孤月星空 */
+.card-bg-5 { background-image: url('./su5.png'); } /* 烟雨平湖 */
+
+/* 高级遮罩层：收起时是半透明黑底，保证竖排文字清晰 */
+.s-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(26, 26, 26, 0.6);
+    transition: all 0.6s ease;
+    z-index: 0;
+}
+
+/* 激活展开时：左侧变暗保护文字，右侧渐渐透明露出背景图 */
+.s-card:hover, .s-card.active {
+    flex: 5;
+    border: 1px solid rgba(194, 58, 43, 0.4);
+}
+.s-card:hover::before, .s-card.active::before {
+    background: linear-gradient(to right, rgba(26,26,26,0.95) 0%, rgba(26,26,26,0.7) 40%, rgba(26,26,26,0.1) 100%);
+}
+
+/* 收起状态下的内容（竖排文字） */
+.s-card-collapsed {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    transition: opacity 0.4s, transform 0.4s;
+    z-index: 1;
+}
+.s-card-collapsed .s-icon {
+    font-size: 2rem;
+    filter: grayscale(100%) opacity(0.8);
+    transition: 0.4s;
+}
+.s-card-collapsed .s-title-vertical {
+    writing-mode: vertical-rl;
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 1.5rem;
+    color: rgba(245, 240, 232, 0.9);
+    letter-spacing: 5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+.s-card:hover .s-card-collapsed, .s-card.active .s-card-collapsed {
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+}
+
+/* 展开状态下的详细内容 */
+.s-card-content {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    opacity: 0;
+    transform: translateX(30px);
+    transition: opacity 0.5s ease 0.2s, transform 0.5s ease 0.2s;
+    pointer-events: none;
+    z-index: 2;
+}
+.s-card:hover .s-card-content, .s-card.active .s-card-content {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+}
+
+.s-icon-large {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 20px rgba(194,58,43,0.5);
+}
+.s-card-content h3 {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 2.2rem;
+    color: var(--paper);
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.8);
+}
+.s-card-content p {
+    font-size: 1rem;
+    line-height: 2;
+    color: rgba(245, 240, 232, 0.85);
+    max-width: 450px; /* 控制文字宽度，不遮挡右侧背景图 */
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+.s-card-content .quote {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-left: 3px solid var(--seal-red);
+    background: rgba(0, 0, 0, 0.4);
+    color: var(--paper);
+    font-size: 0.9rem;
+    font-style: italic;
+    max-width: 450px;
+    backdrop-filter: blur(5px);
+}
+        /* 文学地位 */
+ /* ================== 文学地位：博物馆展陈排版 ================== */
+.legacy-section {
+    padding: 8rem 2rem;
+    /* 加入淡淡的宣纸质感渐变 */
+    background: linear-gradient(135deg, var(--paper) 0%, #e9e3d9 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 背景大字 */
+.legacy-bg-text {
+    position: absolute;
+    right: -5%;
+    bottom: -5%;
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 50vw;
+    color: rgba(0, 0, 0, 0.025);
+    line-height: 1;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.legacy-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem;
+    position: relative;
+    z-index: 1;
+    /* 底部留出空间给错落排版的卡片 */
+    padding-bottom: 4rem; 
+}
+
+/* 独立展卡设计 */
+.legacy-card {
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-top: 3px solid var(--seal-red);
+    padding: 3rem 2.5rem;
+    position: relative;
+    transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+}
+
+/* 实现阶梯式错落排版 */
+.legacy-card:nth-child(2) { transform: translateY(40px); }
+.legacy-card:nth-child(3) { transform: translateY(80px); }
+
+/* 悬停时的浮雕效果 */
+.legacy-card:hover {
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 20px 40px rgba(194, 58, 43, 0.08);
+}
+/* 悬停时稍微上浮，并且要抵消原本的 translateY */
+.legacy-card:nth-child(1):hover { transform: translateY(-10px); }
+.legacy-card:nth-child(2):hover { transform: translateY(30px); }
+.legacy-card:nth-child(3):hover { transform: translateY(70px); }
+
+/* 背景巨大数字 */
+.card-num {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    font-size: 5rem;
+    font-weight: 900;
+    color: rgba(0, 0, 0, 0.04);
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-style: italic;
+    pointer-events: none;
+    transition: 0.5s;
+}
+.legacy-card:hover .card-num {
+    color: rgba(194, 58, 43, 0.1);
+    transform: scale(1.1) translateX(-10px);
+}
+
+/* 标题区排版：竖排副标题 + 主标题 */
+.card-title-wrap {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+    align-items: flex-start;
+}
+.vertical-subtitle {
+    writing-mode: vertical-rl;
+    font-size: 0.8rem;
+    letter-spacing: 4px;
+    color: var(--seal-red);
+    border-left: 1px solid rgba(194, 58, 43, 0.3);
+    padding-left: 0.5rem;
+    margin-top: 0.5rem;
+}
+.card-title-wrap h3 {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 1.8rem;
+    color: var(--ink-dark);
+    line-height: 1.3;
+}
+
+/* 正文排版 */
+.card-body p {
+    font-size: 0.95rem;
+    line-height: 2;
+    color: var(--ink-gray);
+    margin-bottom: 1rem;
+}
+.card-body p:last-child {
+    margin-bottom: 0;
+}
+.card-body .hl {
+    color: var(--seal-red);
+    font-weight: 600;
+}
+
+/* 底部小装饰 */
+.card-decoration {
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 30px; height: 30px;
+    border-bottom: 2px solid rgba(194, 58, 43, 0.2);
+    border-right: 2px solid rgba(194, 58, 43, 0.2);
+    margin: 1.5rem;
+    transition: 0.5s;
+}
+.legacy-card:hover .card-decoration {
+    border-color: var(--seal-red);
+    width: 40px; height: 40px;
+}
+
+/* 移动端适配：取消错位，改为正常的垂直堆叠 */
+@media(max-width: 992px) {
+    .legacy-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding-bottom: 0;
+    }
+    .legacy-card:nth-child(2), .legacy-card:nth-child(3) {
+        transform: none;
+    }
+    .legacy-card:nth-child(1):hover, 
+    .legacy-card:nth-child(2):hover, 
+    .legacy-card:nth-child(3):hover {
+        transform: translateY(-5px);
+    }
+}
+        /* 结语 */
+/* 结语 */
+.ending {
+    padding: 8rem 2rem; /* 稍微加大了上下间距，显得更大气 */
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    
+    /* 核心修改：替换单一黑色背景，加入渐变遮罩 + 背景图 */
+    background-image: 
+        /* 遮罩层：上下边缘更暗以融合页面，中间稍微透出背景图 */
+        linear-gradient(to bottom, rgba(26,26,26,0.8) 0%, rgba(26,26,26,0.3) 50%, rgba(26,26,26,0.8) 100%),
+        /* 替换为你想要的背景图路径，比如一幅淡雅的水墨山水或星空 */
+        url('./su7.png'); 
+        
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed; /* 保持视差滚动的高级感 */
+}
+
+/* 保持原本的印章发光动画等不变 */
+.ending .seal-big {
+    width: 140px; height: 140px; 
+    border: 3px solid var(--seal-red); 
+    display: inline-flex; align-items: center; justify-content: center; 
+    font-family: 'Ma Shan Zheng', cursive; font-size: 3.5rem; 
+    color: var(--seal-red); margin-bottom: 2rem; 
+    animation: sealGlow 3s ease-in-out infinite;
+}
+@keyframes sealGlow {
+    0%, 100% { box-shadow: 0 0 30px rgba(194,58,43,.2); background: rgba(194,58,43,.05); }
+    50% { box-shadow: 0 0 60px rgba(194,58,43,.6); background: rgba(194,58,43,.15); }
+}
+.ending h2 {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    color: #dcb879;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 4px 15px rgba(0,0,0,0.9), 0 0 20px rgba(220, 184, 121, 0.3);
+}
+
+.ending .end-poem {
+    font-size: 1.15rem;
+    color: rgba(245,240,232,0.95);
+    line-height: 2.4;
+    max-width: 500px;
+    margin: 0 auto 2.5rem;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+}
+
+.ending .end-text {
+    font-size: 0.95rem;
+    color: rgba(245,240,232,0.85);
+    max-width: 750px;
+    margin: 0 auto 3rem;
+    line-height: 2;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+}
+.ending .nav-links { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; }
+.ending .nav-links a { padding: 0.8rem 2.5rem; border: 1px solid rgba(245,240,232,.3); color: var(--paper); text-decoration: none; font-size: 0.95rem; letter-spacing: 2px; transition: 0.4s; border-radius: 4px; backdrop-filter: blur(5px); }
+.ending .nav-links a:hover { border-color: var(--seal-red); background: rgba(194,58,43,.2); transform: translateY(-3px); }
+.ending .nav-links a.primary {
+    background: rgba(194,58,43,0.8);
+    border-color: var(--seal-red);
+    /* 也可以选择用金色边框呼应标题： border-color: #dcb879; */
+}
+.ending .nav-links a.primary:hover { background: rgba(194,58,43,1); box-shadow: 0 10px 20px rgba(194,58,43,0.3); }
+        footer{background:var(--ink-black);border-top:1px solid rgba(245,240,232,.08);padding:3rem 2rem;text-align:center}
+        footer p{color:rgba(245,240,232,.3);font-size:.8rem;letter-spacing:2px}
+        footer .seal-footer{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:2px solid rgba(194,58,43,.4);color:rgba(194,58,43,.6);font-family:'Ma Shan Zheng',cursive;font-size:1.2rem;margin-bottom:1rem}
+
+        .reveal{opacity:0;transform:translateY(30px);transition:all .7s ease}
+        .reveal.active{opacity:1;transform:translateY(0)}
+
+        @media(max-width:768px){
+            .hamburger{display:flex}
+            nav ul{position:fixed;top:0;right:-100%;width:70%;height:100vh;background:rgba(26,26,26,.98);flex-direction:column;padding:5rem 2rem;transition:right .4s;gap:.5rem}
+            nav ul.open{right:0}
+            .recap-grid{grid-template-columns:1fr}
+            .spirit-item{flex-direction:column;gap:1rem}
+            .spirit-item .s-icon{width:auto}
+        }
+
+        /* ====== 伴学灵宝 (国风书童) ====== */
+        .companion-pet {
+            position: fixed; bottom: 20px; right: 30px; z-index: 9999;
+            display: flex; flex-direction: column; align-items: center;
+            cursor: pointer; animation: floatAnim 4s ease-in-out infinite;
+        }
+        .pet-avatar-container {
+            width: 120px; height: auto; display: flex; align-items: flex-end;
+            justify-content: center; position: relative;
+        }
+        .pet-image {
+            width: 100%; height: auto; object-fit: contain;
+            filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.3)) drop-shadow(0px 0px 8px rgba(245,240,232,0.2));
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: breatheAnim 3s ease-in-out infinite alternate;
+        }
+        .companion-pet:hover .pet-image {
+            transform: scale(1.08) translateY(-5px);
+            filter: drop-shadow(0px 15px 20px rgba(0,0,0,0.4)) drop-shadow(0px 0px 12px rgba(194,58,43,0.4));
+        }
+        .pet-bubble {
+            background: rgba(26, 26, 26, 0.92); color: #f5f0e8;
+            padding: 0.8rem 1.2rem; border-radius: 12px; font-size: 0.85rem;
+            line-height: 1.6; margin-bottom: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid rgba(245,240,232,0.15);
+            position: relative; opacity: 0; transform: translateY(10px);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            pointer-events: none; width: max-content; max-width: 200px;
+            text-align: center; letter-spacing: 1px;
+        }
+        .pet-bubble::after {
+            content: ''; position: absolute; bottom: -6px; left: 50%;
+            transform: translateX(-50%); border-left: 6px solid transparent;
+            border-right: 6px solid transparent; border-top: 6px solid rgba(26, 26, 26, 0.92);
+        }
+        .companion-pet:hover .pet-bubble, .pet-bubble.active {
+            opacity: 1; transform: translateY(0);
+        }
+        @keyframes floatAnim { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes breatheAnim { 0% { transform: scaleY(1) scaleX(1); } 100% { transform: scaleY(1.02) scaleX(0.99); } }
+        @media (max-width: 768px) {
+            .pet-avatar-container { width: 90px; }
+            .companion-pet { right: 10px; bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-inner">
+        <a href="index5.html" class="logo"><span class="seal-sm">蘇</span>词学研习</a>
+        <div class="hamburger" onclick="document.getElementById('nav-menu').classList.toggle('open')"><span></span><span></span><span></span></div>
+        <ul id="nav-menu">
+            <li><a href="index5.html">首页</a></li>
+            <li><a href="biography5.html">苏轼生平</a></li>
+            <li><a href="analysis5.html">词作解析</a></li>
+            <li><a href="knowledge5.html">知识拓扑</a></li>
+            <li><a href="quiz5.html">课后练习</a></li>
+            <li><a href="chat5.html">知识问答</a></li>
+            <li><a href="summary5.html" class="active">回顾总结</a></li>
+        </ul>
+    </div>
+</nav>
+
+<section class="page-hero">
+    <div class="ink-bg"></div>
+    <div class="page-hero-content">
+        <span class="label">回 · 顾 · 总 · 结</span>
+        <h1>以词为鉴</h1>
+        <p>千年前的那场出猎，至今仍震撼着每一个中国人的心。<br>让我们回顾所学，铭记东坡之魂。</p>
+    </div>
+</section>
+
+<!-- ================== 诗词与精要：左右双栏拼合布局 ================== -->
+<section class="combined-learning-section">
+    <div class="section-header reveal">
+        <span class="label">温 · 故 · 知 · 新</span>
+        <h2>诗词与精要</h2>
+        <div class="divider"></div>
+    </div>
+
+    <div class="combined-layout">
+        <!-- 左侧：信笺诗词 (带吸顶悬浮效果) -->
+        <div class="left-poem-col reveal">
+            <div class="poem-sticky-wrapper">
+                <div class="poem-box">
+                    <div class="poem-watermark">狂</div>
+                    <div class="poem-content-vertical">
+                        <div class="poem-header">
+                            <h3>江城子 · 密州出猎</h3>
+                            <div class="author">
+                                <span>〔 宋 〕 苏 轼</span>
+                                <span class="red-seal">苏东坡</span>
+                            </div>
+                        </div>
+                        <div class="poem-body">
+                            <p>老夫聊发少年狂，左牵黄，右擎苍。</p>
+                            <p>锦帽貂裘，千骑卷平冈。</p>
+                            <p>为报倾城随太守，亲射虎，看孙郎。</p>
+                            <p class="stanza-gap"></p>
+                            <p>酒酣胸胆尚开张。鬓微霜，又何妨！</p>
+                            <p>持节云中，何日遣冯唐？</p>
+                            <p>会挽雕弓如满月，西北望，射天狼。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：精要卡片网格 -->
+        <div class="right-recap-col">
+            <div class="recap-grid-new">
+                <!-- 卡片 1 -->
+                <div class="recap-card reveal" style="transition-delay: 0.1s;">
+                    <span class="r-num">壹</span>
+                    <h3>词眼"狂"字</h3>
+                    <p>"狂"字统领全词，奠定豪放激昂的感情基调。上阙写出猎之"狂态"，下阙抒报国之"狂志"。这个字也是苏轼人格力量的集中体现——不服老、不消沉、不妥协。</p>
+                </div>
+                <!-- 卡片 2 -->
+                <div class="recap-card reveal" style="transition-delay: 0.2s;">
+                    <span class="r-num">贰</span>
+                    <h3>两处用典</h3>
+                    <p>①孙权射虎——苏轼以孙权自比，表现英武豪情；②冯唐持节赦魏尚——苏轼以魏尚自喻，表达渴望被重新起用的心情。用典精妙，言近旨远。</p>
+                </div>
+                <!-- 卡片 3 -->
+                <div class="recap-card reveal" style="transition-delay: 0.1s;">
+                    <span class="r-num">叁</span>
+                    <h3>三层递进</h3>
+                    <p>全词由浅入深：出猎之壮（叙事）→ 壮志之烈（言志）→ 家国之大（爱国）。由个人出猎升华到保家卫国，格局宏大，气势磅礴。</p>
+                </div>
+                <!-- 卡片 4 -->
+                <div class="recap-card reveal" style="transition-delay: 0.2s;">
+                    <span class="r-num">肆</span>
+                    <h3>开创词风</h3>
+                    <p>《江城子·密州出猎》被认为是豪放词的开山之作。苏轼打破了"词为艳科"的传统，使词成为可以抒发壮志豪情的文学形式。</p>
+                </div>
+                <!-- 卡片 5 -->
+                <div class="recap-card reveal" style="transition-delay: 0.1s;">
+                    <span class="r-num">伍</span>
+                    <h3>创作背景</h3>
+                    <p>写于熙宁八年（1075年），苏轼任密州知州，年四十。因反对变法而外调，虽远离权力中心，却仍怀报国壮志。十月出猎，豪情激荡，遂成此词。</p>
+                </div>
+                <!-- 卡片 6 -->
+                <div class="recap-card reveal" style="transition-delay: 0.2s;">
+                    <span class="r-num">陆</span>
+                    <h3>名句赏析</h3>
+                    <p>"会挽雕弓如满月，西北望，射天狼"——全词最高潮。"雕弓如满月"以比喻塑造英武形象，"天狼"借代入侵之敌，将个人豪情升华为家国情怀。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 精神风貌 -->
+<!-- 精神风貌 -->
+<section class="spirit-section">
+    <div class="section-header reveal" style="margin-bottom:3rem">
+        <span class="label" style="color:rgba(245,240,232,.4);border-color:rgba(245,240,232,.15)">精 · 神 · 风 · 貌</span>
+        <h2 style="color:var(--paper)">词中见人</h2>
+        <div class="divider"></div>
+    </div>
+    
+    <div class="spirit-gallery reveal">
+        <!-- 卡片 1 -->
+        <div class="s-card active card-bg-1" onclick="activateCard(this)">
+            <div class="s-card-collapsed">
+                <div class="s-icon">🏹</div>
+                <div class="s-title-vertical">老当益壮</div>
+            </div>
+            <div class="s-card-content">
+                <div class="s-icon-large">🏹</div>
+                <h3>老当益壮，豪情不减</h3>
+                <p>苏轼时年四十，因政治失意而远离京城，却丝毫没有暮气沉沉。"老夫聊发少年狂"——他以自嘲的口吻说出最不服老的宣言。"左牵黄，右擎苍"的矫健英姿，都在告诉世人：年华可以老去，但壮志永远年轻。</p>
+                <div class="quote">"老夫聊发少年狂，左牵黄，右擎苍。"</div>
+            </div>
+        </div>
+
+        <!-- 卡片 2 -->
+        <div class="s-card card-bg-2" onclick="activateCard(this)">
+            <div class="s-card-collapsed">
+                <div class="s-icon">⚔️</div>
+                <div class="s-title-vertical">英雄自许</div>
+            </div>
+            <div class="s-card-content">
+                <div class="s-icon-large">⚔️</div>
+                <h3>以英雄自许，壮心不已</h3>
+                <p>苏轼以孙权射虎自比，表现出虽为文官却有武将之勇的豪迈气概。"亲射虎，看孙郎"——不是空发议论，而是亲身实践。"酒酣胸胆尚开张"更是直抒胸臆，酒后吐真言，真性情跃然纸上。</p>
+                <div class="quote">"为报倾城随太守，亲射虎，看孙郎。"</div>
+            </div>
+        </div>
+
+        <!-- 卡片 3 -->
+        <div class="s-card card-bg-3" onclick="activateCard(this)">
+            <div class="s-card-collapsed">
+                <div class="s-icon">🔥</div>
+                <div class="s-title-vertical">直面衰老</div>
+            </div>
+            <div class="s-card-content">
+                <div class="s-icon-large">🔥</div>
+                <h3>藐视困境，直面衰老</h3>
+                <p>"鬓微霜，又何妨！"——这是苏轼面对人生困境的态度。鬓角已白又怎样？被贬外调又怎样？三个字"又何妨"铿锵有力，掷地有声，是对命运的蔑视，更是对自我价值的坚定。</p>
+                <div class="quote">"鬓微霜，又何妨！"</div>
+            </div>
+        </div>
+
+        <!-- 卡片 4 -->
+        <div class="s-card card-bg-4" onclick="activateCard(this)">
+            <div class="s-card-collapsed">
+                <div class="s-icon">🌟</div>
+                <div class="s-title-vertical">心系家国</div>
+            </div>
+            <div class="s-card-content">
+                <div class="s-icon-large">🌟</div>
+                <h3>心系家国，志在千里</h3>
+                <p>苏轼最可贵的品质在于：他从不因个人的失意而放弃对国家的担当。"持节云中，何日遣冯唐"——他渴望被重用，不是为了荣华富贵，而是为了"西北望，射天狼"。将一己之情升华为家国之志。</p>
+                <div class="quote">"会挽雕弓如满月，西北望，射天狼。"</div>
+            </div>
+        </div>
+
+        <!-- 卡片 5 -->
+        <div class="s-card card-bg-5" onclick="activateCard(this)">
+            <div class="s-card-collapsed">
+                <div class="s-icon">☯️</div>
+                <div class="s-title-vertical">旷达超然</div>
+            </div>
+            <div class="s-card-content">
+                <div class="s-icon-large">☯️</div>
+                <h3>旷达超然，一蓑烟雨</h3>
+                <p>纵观苏轼一生，《密州出猎》中的豪迈并非一时冲动，而是他人格底色的自然流露。越是遭受打击越是展现出旷达超然的精神力量。"一蓑烟雨任平生"——正是这首词中"又何妨"精神的延续。</p>
+                <div class="quote">"回首向来萧瑟处，归去，也无风雨也无晴。"</div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- 文学地位 -->
+<!-- 文学地位 -->
+<section class="legacy-section">
+    <div class="legacy-bg-text">传</div>
+    
+    <div class="section-header reveal">
+        <span class="label">文 · 学 · 地 · 位</span>
+        <h2>千古绝响</h2>
+        <div class="divider"></div>
+    </div>
+    
+    <div class="legacy-container">
+        <!-- 卡片 1 -->
+        <div class="legacy-card reveal">
+            <div class="card-num">01</div>
+            <div class="card-title-wrap">
+                <span class="vertical-subtitle">开宗立派</span>
+                <h3>豪放词派<br>开山之作</h3>
+            </div>
+            <div class="card-body">
+                <p>在苏轼之前，词坛长期被<span class="hl">"花间派"</span>所主导，内容多为男欢女爱、伤春悲秋，词被视为"小道""艳科"。</p>
+                <p>他将词从闺阁绣帘中解放出来，赋予词以<span class="hl">宏大的格局、壮阔的意境</span>。从此，词不再只是"诗余"，而成为与诗并驾齐驱的文学形式。</p>
+            </div>
+            <div class="card-decoration"></div>
+        </div>
+
+        <!-- 卡片 2 (稍微往下错位) -->
+        <div class="legacy-card reveal" style="transition-delay: 0.2s;">
+            <div class="card-num">02</div>
+            <div class="card-title-wrap">
+                <span class="vertical-subtitle">破旧立新</span>
+                <h3>苏轼词的<br>革新意义</h3>
+            </div>
+            <div class="card-body">
+                <p><span class="hl">题材拓展：</span>将出猎、军事、政治抱负、人生哲理等全新题材引入词中。</p>
+                <p><span class="hl">以诗入词：</span>打破诗词界限，将诗的表现手法（如用典、议论）引入词中。</p>
+                <p><span class="hl">格调升华：</span>从"词为艳科"到"无意不可入"，使词由俗转雅，由小变大。</p>
+            </div>
+            <div class="card-decoration"></div>
+        </div>
+
+        <!-- 卡片 3 (再往下错位) -->
+        <div class="legacy-card reveal" style="transition-delay: 0.4s;">
+            <div class="card-num">03</div>
+            <div class="card-title-wrap">
+                <span class="vertical-subtitle">流芳百世</span>
+                <h3>后世深远<br>不可磨灭</h3>
+            </div>
+            <div class="card-body">
+                <p>直接影响了南宋<span class="hl">辛弃疾、陆游</span>等人，形成了蔚为壮观的豪放词派。二人并称"苏辛"。</p>
+                <p>即便到了近现代，<span class="hl">"老夫聊发少年狂"</span>依然是无数人面对困境时的精神支柱，其旷达精神深刻影响着中国人的灵魂。</p>
+            </div>
+            <div class="card-decoration"></div>
+        </div>
+    </div>
+</section>
+
+<!-- 结语 -->
+<section class="ending">
+    <div class="seal-big reveal">蘇</div>
+    <h2 class="reveal">千载东坡，万古风流</h2>
+    <div class="end-poem reveal">
+        老夫聊发少年狂，左牵黄，右擎苍。<br>
+        锦帽貂裘，千骑卷平冈。<br>
+        为报倾城随太守，亲射虎，看孙郎。<br><br>
+        酒酣胸胆尚开张。鬓微霜，又何妨！<br>
+        持节云中，何日遣冯唐？<br>
+        会挽雕弓如满月，西北望，射天狼。
+    </div>
+    <p class="end-text reveal">
+        九百五十年前的那场出猎，苏轼纵马平冈、挽弓如月，将个人的豪情壮志与家国的安危存亡融为一体。
+        他以一首词开创了一个词派，以一生的旷达诠释了中国文人最高的精神境界。
+        读苏轼的词，不仅是文学的享受，更是灵魂的洗礼。
+        愿你在研习之后，心中也有那一弯满月般的雕弓，西北望去，壮志凌云。
+    </p>
+    <div class="nav-links reveal">
+        <a href="index5.html">返回首页</a>
+        <a href="biography5.html">重读生平</a>
+        <a href="analysis5.html">再看解析</a>
+        <a href="quiz5.html" class="primary">重做练习</a>
+    </div>
+</section>
+
+<footer>
+    <div class="seal-footer">蘇</div>
+    <p>江城子 · 密州出猎 — 词学研习网站</p>
+    <p style="margin-top:.5rem;opacity:.5">以墨为魂，以词为骨</p>
+</footer>
+
+<!-- ================== 伴学灵宝：国风书童 ================== -->
+<div id="companion-pet" class="companion-pet">
+    <div class="pet-bubble" id="pet-bubble"></div>
+    <div class="pet-avatar-container">
+        <!-- 请确保这行图片路径正确 -->
+        <img src="scholar.png" alt="伴学书童" class="pet-image">
+    </div>
+</div>
+
+<script>
+// 滚动显示动画
+const revealEls=document.querySelectorAll('.reveal');
+const revealOnScroll=()=>{
+    revealEls.forEach(el=>{
+        const top=el.getBoundingClientRect().top;
+        if(top<window.innerHeight-80)el.classList.add('active');
+    });
+};
+window.addEventListener('scroll',revealOnScroll);
+revealOnScroll();
+
+// ================== 书童交互脚本 ==================
+window.addEventListener('DOMContentLoaded', function() {
+    const pet = document.getElementById('companion-pet');
+    const bubble = document.getElementById('pet-bubble');
+    if(!pet || !bubble) return;
+
+    const url = window.location.href.toLowerCase();
+    let quotes = [
+        "千古风流人物，尽在词中。", 
+        "学完这首词，公子可有豪情顿生？", 
+        "一蓑烟雨任平生，咱们下节课见！"
+    ];
+
+    function showRandomQuote() {
+        const randomText = quotes[Math.floor(Math.random() * quotes.length)];
+        bubble.innerHTML = randomText;
+        bubble.classList.add('active');
+        setTimeout(() => { bubble.classList.remove('active'); }, 5000);
+    }
+
+    pet.addEventListener('click', function() {
+        window.location.href = 'chat5.html';
+    });
+
+    setTimeout(() => {
+        bubble.innerHTML = quotes[0];
+        bubble.classList.add('active');
+        setTimeout(() => { bubble.classList.remove('active'); }, 5000);
+    }, 2000);
+
+    setInterval(showRandomQuote, 15000);
+});
+// 精神风貌卡片点击切换交互
+function activateCard(element) {
+    // 移除所有卡片的 active 类
+    const cards = document.querySelectorAll('.s-card');
+    cards.forEach(card => card.classList.remove('active'));
+    // 给当前点击的卡片加上 active 类
+    element.classList.add('active');
+}
+</script>
+</body>
+</html>
