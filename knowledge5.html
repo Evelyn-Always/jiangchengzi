@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识拓扑 — 词学研习</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;300;400;500;600;700;900&family=Ma+Shan+Zheng&display=swap');
+        :root{
+            --ink-black:#1a1a1a;
+            --ink-dark:#2c2c2c;
+            --ink-gray:#555;
+            --ink-light:#888;
+            --paper:#f5f0e8;
+            --paper-light:#fdfbf7;
+            --seal-red:#c23a2b;
+            --seal-light:#d95b4f;
+            --gold-light:#e6d8b8;
+            --gold-dark:#b39b6d;
+            --cyan-gray:#6b7b7b;
+        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink-black);overflow-x:hidden;line-height:2}
+
+        /* 导航栏 */
+        nav{position:fixed;top:0;left:0;width:100%;z-index:9000;background:rgba(26,26,26,.95);backdrop-filter:blur(15px);box-shadow:0 2px 30px rgba(0,0,0,.3);padding:.6rem 0}
+        nav .nav-inner{max-width:1400px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between}
+        nav .logo{font-family:'Ma Shan Zheng',cursive;font-size:1.6rem;color:var(--paper);text-decoration:none;display:flex;align-items:center;gap:.5rem}
+        nav .logo .seal-sm{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:2px solid var(--seal-red);color:var(--seal-red);font-size:.9rem}
+        nav ul{display:flex;list-style:none;gap:.3rem}
+        nav ul li a{color:rgba(245,240,232,.7);text-decoration:none;font-size:.9rem;padding:.5rem 1rem;border-radius:4px;transition:.3s;position:relative}
+        nav ul li a:hover,nav ul li a.active{color:var(--paper);background:rgba(245,240,232,.08)}
+        nav ul li a.active::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:20px;height:2px;background:var(--seal-red)}
+        .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer}
+        .hamburger span{width:25px;height:2px;background:var(--paper);transition:.3s}
+
+        /* Hero 区域 */
+        .page-hero{
+            min-height: 55vh; 
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden; text-align: center;
+            padding-top: 4rem;
+            background-color: var(--ink-black);
+            background-image: 
+                linear-gradient(to right, rgba(26,26,26,1) 40%, rgba(26,26,26,0.6) 70%, rgba(26,26,26,0) 100%),
+                url('./kbg1.png');
+            background-position: center left, right center;
+            background-size: auto, cover;
+            background-repeat: no-repeat;
+        }
+
+        .page-hero::after{
+            content: '拓';
+            position: absolute; top: 50%; left: 40%; transform: translate(-50%,-50%);
+            font-family: 'Ma Shan Zheng', cursive; font-size: 45vw;
+            color: rgba(255, 255, 255, 0.03);
+            pointer-events: none; z-index: 1;
+        }
+
+        .page-hero-content{position:relative; z-index:2; padding:2rem;}
+        
+        .page-hero-content .label{
+            display: inline-block; font-size: .8rem; letter-spacing: 6px;
+            color: rgba(245, 240, 232, 0.7);
+            border: 1px solid rgba(245, 240, 232, 0.2);
+            padding: .4rem 1.2rem; margin-bottom: 1.5rem;
+            background: transparent;
+        }
+
+        .page-hero-content h1{
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: clamp(3rem, 6vw, 5rem);
+            color: var(--paper-light);
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 30px rgba(0,0,0,0.8);
+            letter-spacing: 4px;
+        }
+
+        .page-hero-content p{
+            color: rgba(245, 240, 232, 0.6);
+            font-size: 1.1rem; max-width: 600px; margin: 0 auto; line-height: 1.8;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .section-header{text-align:center;margin-bottom:3rem}
+        .section-header .label{display:inline-block;font-size:.8rem;letter-spacing:6px;color:var(--seal-red);border:1px solid rgba(194, 58, 43, 0.2);padding:.3rem 1.2rem;margin-bottom:1.5rem}
+        .section-header h2{font-family:'Ma Shan Zheng',cursive;font-size:clamp(2rem,4vw,3rem);margin-bottom:1rem; color: var(--ink-black);}
+        .section-header .divider{width:60px;height:2px;background:var(--seal-red);margin:0 auto}
+
+        /* 图谱容器 */
+        .graph-section{padding:5rem 2rem; background: #fdfbf7; position: relative; z-index: 5;}
+        .graph-hint{text-align:center;color:var(--ink-light);font-size:.85rem;margin-bottom:1.5rem;letter-spacing:4px;}
+
+        /* 图例 */
+        .graph-legend {
+            max-width:1300px;
+            margin: 0 auto 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(0,0,0,0.2);
+        }
+
+        #topology-canvas{
+            width:100%;max-width:1300px;margin:0 auto;
+            height:850px;position:relative;
+            background: #f6f4ef;
+            background-image:
+                linear-gradient(90deg, rgba(0,0,0,0.01) 1px, transparent 1px),
+                linear-gradient(rgba(0,0,0,0.01) 1px, transparent 1px);
+            background-size: 20px 20px;
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 8px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.03), inset 0 0 40px rgba(0,0,0,0.02);
+            overflow: hidden;
+        }
+
+        #topology-canvas svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 印章装饰 */
+        .canvas-deco-seal {
+            position: absolute; right: 40px; top: 40px;
+            width: 36px; height: 36px; border: 1.5px solid var(--seal-red);
+            color: var(--seal-red); font-weight: bold;
+            font-family: 'Noto Serif SC', serif; font-size: 1.1rem;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0.8; pointer-events: none; z-index: 10;
+        }
+
+        /* D3 图谱样式 */
+        .topo-link {
+            fill: none;
+            stroke: rgba(0, 0, 0, 0.1);
+            stroke-width: 1.5;
+            transition: stroke 0.3s ease, stroke-width 0.3s ease, opacity 0.3s ease;
+        }
+
+        .topo-link.active {
+            stroke: var(--seal-red);
+            stroke-width: 2.5;
+            opacity: 1;
+        }
+
+        .topo-link.dimmed {
+            opacity: 0.03;
+        }
+
+        .topo-node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .topo-node.dimmed {
+            opacity: 0.2;
+        }
+
+        .topo-node circle {
+            transition: all 0.3s ease, filter 0.3s ease;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.08));
+        }
+
+        .topo-node:hover circle {
+            filter: drop-shadow(0 4px 12px rgba(194, 58, 43, 0.4));
+            stroke-width: 2.5px !important;
+        }
+
+        /* 核心节点 - 印章风格 */
+        .topo-node.level-0 circle {
+            fill: #fff;
+            stroke: var(--seal-red);
+            stroke-width: 2.5px;
+        }
+
+        .topo-node.level-0 text {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1.8rem;
+            color: var(--seal-red);
+            font-weight: bold;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            pointer-events: none;
+        }
+
+        /* 一级节点 - 彩色类别 */
+        .topo-node.level-1 circle {
+            stroke-width: 1.5px;
+        }
+
+        .topo-node.level-1 text {
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            pointer-events: none;
+            fill: #fff;
+        }
+
+        .topo-node.level-1 .sub-label {
+            font-size: 0.65rem;
+            fill: #fff;
+            opacity: 0.85;
+        }
+
+        /* 一级节点颜色映射 */
+        .topo-node.cat-lit circle { fill: #e07856; stroke: #d96644; }
+        .topo-node.cat-pol circle { fill: #8b7355; stroke: #7a6249; }
+        .topo-node.cat-art circle { fill: #d4a574; stroke: #c49664; }
+        .topo-node.cat-phi circle { fill: #7b9daa; stroke: #6a8c99; }
+        .topo-node.cat-life circle { fill: #a89968; stroke: #998857; }
+        .topo-node.cat-soc circle { fill: #c5a572; stroke: #b49462; }
+
+        /* 二级节点 - 中等大小 */
+        .topo-node.level-2 circle {
+            fill: var(--paper-light);
+            stroke: rgba(0,0,0,0.12);
+            stroke-width: 1px;
+        }
+
+        .topo-node.level-2 text {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--ink-dark);
+            text-anchor: middle;
+            dominant-baseline: middle;
+            pointer-events: none;
+        }
+
+        .topo-node.level-2:hover circle {
+            fill: var(--paper);
+            stroke: var(--seal-red);
+            stroke-width: 1.5px;
+        }
+
+        /* 三级节点 - 新增，更小 */
+        .topo-node.level-3 circle {
+            fill: rgba(194, 58, 43, 0.08);
+            stroke: rgba(194, 58, 43, 0.25);
+            stroke-width: 0.8px;
+        }
+
+        .topo-node.level-3 text {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--ink-gray);
+            text-anchor: middle;
+            dominant-baseline: middle;
+            pointer-events: none;
+        }
+
+        .topo-node.level-3:hover circle {
+            fill: rgba(194, 58, 43, 0.15);
+            stroke: var(--seal-red);
+            stroke-width: 1.2px;
+        }
+
+        /* 知识卡片 */
+        .knowledge-cards{padding:5rem 2rem;background:#fff;}
+        .k-grid {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; height: 450px; gap: 1rem;
+        }
+
+        .k-card {
+            flex: 1; position: relative; overflow: hidden;
+            background: var(--paper-light); border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 8px; transition: flex 0.6s cubic-bezier(0.25, 1, 0.5, 1), background 0.4s;
+            cursor: pointer; display: flex; flex-direction: column;
+        }
+
+        .k-card:hover {
+            flex: 4; background: #fff; box-shadow: 0 15px 35px rgba(0,0,0,0.06);
+            border-color: rgba(194, 58, 43, 0.2);
+        }
+
+        .k-card-title-vertical {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.3s; padding: 2rem 0;
+        }
+        .k-card:hover .k-card-title-vertical { opacity: 0; pointer-events: none; }
+        .k-card-title-vertical .k-icon { font-size: 1.8rem; margin-bottom: 1rem; opacity: 0.6; }
+        .k-card-title-vertical h3 {
+            writing-mode: vertical-rl; text-orientation: upright; letter-spacing: 6px;
+            font-family: 'Ma Shan Zheng', cursive; font-size: 1.4rem; color: var(--ink-dark);
+        }
+
+        .k-card-content {
+            opacity: 0; transition: opacity 0.4s 0.2s; padding: 3rem;
+            width: 100%; height: 100%; position: absolute; top: 0; left: 0;
+            display: flex; flex-direction: column; pointer-events: none;
+        }
+        .k-card:hover .k-card-content { opacity: 1; pointer-events: auto; }
+        
+        .k-card-content .k-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 1rem; }
+        .k-card-content .k-icon { font-size: 2rem; }
+        .k-card-content h3 { font-family: 'Ma Shan Zheng', cursive; font-size: 1.8rem; color: var(--ink-black); }
+        .k-card-content p { font-size: 0.95rem; line-height: 1.8; color: var(--ink-gray); margin-bottom: 1.5rem; }
+        .k-card-content ul { list-style: none; flex-grow: 1; overflow-y: auto; }
+        .k-card-content ul li {
+            font-size: 0.9rem; line-height: 1.6; color: var(--ink-dark);
+            padding: 0.6rem 0; border-bottom: 1px dashed rgba(0,0,0,0.05);
+            display: flex; align-items: flex-start; gap: 0.6rem;
+        }
+        .k-card-content ul li::before { content: '·'; color: var(--seal-red); font-weight: bold; font-size: 1.2rem; line-height: 1; }
+
+        /* 详情面板 */
+        #detail-panel{
+            position:fixed;top:0;right:-480px;width:440px;height:100%;
+            background:rgba(255,255,255,.95); backdrop-filter:blur(20px);
+            border-left:1px solid rgba(0,0,0,.05); z-index:9500;
+            transition:right .45s cubic-bezier(.25,.46,.45,.94); box-shadow:-10px 0 60px rgba(0,0,0,.08);
+            overflow-y:auto;padding:3rem 2rem;
+        }
+        #detail-panel.open{right:0}
+        #detail-panel .close-btn{
+            position:absolute;top:1.5rem;right:1.5rem; background:none;border:1px solid rgba(0,0,0,.1);
+            color:var(--ink-black);width:36px;height:36px;font-size:1.2rem; cursor:pointer;transition:.3s;display:flex;align-items:center;justify-content:center; border-radius:50%;
+        }
+        #detail-panel .close-btn:hover{background:rgba(0,0,0,.05);transform:rotate(90deg)}
+        #detail-panel .panel-tag{
+            display:inline-block;font-size:.75rem;letter-spacing:3px; color:var(--seal-red);border:1px solid rgba(194,58,43,.2);
+            padding:.2rem .8rem;margin-bottom:1rem;background:rgba(194,58,43,.03);
+        }
+        #detail-panel h3{font-family:'Ma Shan Zheng',cursive;font-size:2.2rem;color:var(--ink-black);margin-bottom:1.2rem;}
+        #detail-panel p{font-size:.95rem;line-height:2.2;color:var(--ink-gray);margin-bottom:1.5rem;text-align:justify}
+        #detail-panel .works{margin-top:1rem}
+        #detail-panel .works span{
+            display:inline-block;padding:.3rem .8rem;margin:.3rem .3rem .3rem 0;
+            border:1px solid rgba(0,0,0,.1);color:var(--ink-dark); font-size:.85rem;border-radius:4px;background:var(--paper-light); transition:.3s;
+        }
+        #detail-panel .works span:hover{background:var(--ink-black);color:#fff;border-color:var(--ink-black)}
+        
+        .overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,.6);backdrop-filter:blur(3px);z-index:9400;opacity:0;pointer-events:none;transition:.4s}
+        .overlay.open{opacity:1;pointer-events:auto}
+
+        /* 底部 */
+        footer{background:var(--ink-black);border-top:1px solid rgba(245,240,232,.08);padding:3rem 2rem;text-align:center}
+        footer p{color:rgba(245,240,232,.4);font-size:.85rem;letter-spacing:2px}
+        footer .seal-footer{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:2px solid rgba(194,58,43,.4);color:rgba(194,58,43,.8);font-family:'Ma Shan Zheng',cursive;font-size:1.2rem;margin-bottom:1.2rem}
+
+        .companion-pet { position: fixed; bottom: 20px; right: 30px; z-index: 9999; display: flex; flex-direction: column; align-items: center; cursor: pointer; animation: floatAnim 4s ease-in-out infinite; }
+        .pet-avatar-container { width: 120px; height: auto; display: flex; align-items: flex-end; justify-content: center; position: relative; }
+        .pet-image { width: 100%; height: auto; object-fit: contain; filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.3)); transition: all 0.4s; animation: breatheAnim 3s ease-in-out infinite alternate; }
+        .companion-pet:hover .pet-image { transform: scale(1.08) translateY(-5px); filter: drop-shadow(0px 15px 20px rgba(0,0,0,0.4)); }
+        .pet-bubble { background: rgba(26, 26, 26, 0.92); color: #f5f0e8; padding: 0.8rem 1.2rem; border-radius: 12px; font-size: 0.85rem; line-height: 1.6; margin-bottom: 10px; position: relative; opacity: 0; transform: translateY(10px); transition: all 0.4s; pointer-events: none; width: max-content; max-width: 200px; text-align: center; letter-spacing: 1px; }
+        .pet-bubble::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid rgba(26, 26, 26, 0.92); }
+        .companion-pet:hover .pet-bubble, .pet-bubble.active { opacity: 1; transform: translateY(0); }
+        @keyframes floatAnim { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes breatheAnim { 0% { transform: scaleY(1) scaleX(1); } 100% { transform: scaleY(1.02) scaleX(0.99); } }
+
+        @media(max-width:900px){
+            .k-grid { flex-direction: column; height: auto; gap: 1rem; }
+            .k-card { height: 80px; }
+            .k-card:hover { height: 400px; flex: none; }
+            #topology-canvas{height:700px;} 
+            .graph-legend { gap: 1rem; }
+            .legend-item { font-size: 0.75rem; }
+        }
+        @media(max-width:768px){
+            .hamburger{display:flex}
+            nav ul{position:fixed;top:0;right:-100%;width:70%;height:100vh;background:rgba(26,26,26,.98);flex-direction:column;padding:5rem 2rem;transition:right .4s;gap:.5rem}
+            nav ul.open{right:0}
+            #topology-canvas{height:600px;} 
+            #detail-panel{width:100%}
+            .graph-legend { flex-direction: column; gap: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-inner">
+        <a href="index5.html" class="logo"><span class="seal-sm">蘇</span>词学研习</a>
+        <div class="hamburger" onclick="document.getElementById('nav-menu').classList.toggle('open')"><span></span><span></span><span></span></div>
+        <ul id="nav-menu">
+            <li><a href="index5.html">首页</a></li>
+            <li><a href="biography5.html">苏轼生平</a></li>
+            <li><a href="analysis5.html">词作解析</a></li>
+            <li><a href="knowledge5.html" class="active">知识拓扑</a></li>
+            <li><a href="quiz5.html">课后练习</a></li>
+            <li><a href="chat5.html">知识问答</a></li>
+            <li><a href="summary5.html">回顾总结</a></li>
+        </ul>
+    </div>
+</nav>
+
+<section class="page-hero">
+    <div class="page-hero-content">
+        <span class="label">知 · 识 · 拓 · 扑</span>
+        <h1>东坡精神图谱</h1>
+        <p>水墨丹青间，以苏轼为核心，辐射文学、政治、艺术、哲学、生活。<br>点击节点，探索先生广袤无垠的精神宇宙。</p>
+    </div>
+</section>
+
+<section class="graph-section">
+    <div class="section-header">
+        <span class="label">气 · 韵 · 流 · 畅</span>
+        <h2>水墨脉络</h2>
+        <div class="divider"></div>
+    </div>
+
+    <!-- 图例 -->
+    <div class="graph-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#e07856;"></div><span>文学维度</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#8b7355;"></div><span>政治维度</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#d4a574;"></div><span>艺术维度</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#7b9daa;"></div><span>哲学维度</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#a89968;"></div><span>生活维度</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#c5a572;"></div><span>交游维度</span></div>
+    </div>
+
+    <div id="topology-canvas">
+        <div class="canvas-deco-seal">东坡</div>
+    </div>
+</section>
+
+<!-- 详情面板 -->
+<div class="overlay" id="overlay" onclick="closeDetail()"></div>
+<div id="detail-panel">
+    <button class="close-btn" onclick="closeDetail()">✕</button>
+    <span class="panel-tag" id="panel-tag"></span>
+    <h3 id="panel-title"></h3>
+    <p id="panel-text"></p>
+    <div class="works" id="panel-works"></div>
+</div>
+
+<!-- 知识卡片 -->
+<section class="knowledge-cards">
+    <div class="section-header" style="margin-bottom:3rem">
+        <span class="label">五 · 域 · 纵 · 览</span>
+        <h2>知识集锦</h2>
+        <div class="divider"></div>
+    </div>
+    
+    <div class="k-grid">
+        <div class="k-card">
+            <div class="k-card-title-vertical">
+                <div class="k-icon">📜</div>
+                <h3>文学成就</h3>
+            </div>
+            <div class="k-card-content">
+                <div class="k-header">
+                    <span class="k-icon">📜</span>
+                    <h3>文学成就</h3>
+                </div>
+                <p>苏轼是北宋文学的巅峰人物，诗词文赋兼擅，开创豪放词派，与辛弃疾并称"苏辛"。</p>
+                <ul>
+                    <li>开创豪放词风，打破"词为艳科"的传统</li>
+                    <li>诗与黄庭坚并称"苏黄"</li>
+                    <li>散文位列"唐宋八大家"</li>
+                    <li>赋作《赤壁赋》被誉为千古绝唱</li>
+                </ul>
+            </div>
+        </div>
+        <div class="k-card">
+            <div class="k-card-title-vertical">
+                <div class="k-icon">🏛️</div>
+                <h3>政治生涯</h3>
+            </div>
+            <div class="k-card-content">
+                <div class="k-header">
+                    <span class="k-icon">🏛️</span>
+                    <h3>政治生涯</h3>
+                </div>
+                <p>苏轼一生经历四朝，因政见不合与乌台诗案，宦海沉浮近四十年，然始终勤政爱民。</p>
+                <ul>
+                    <li>反对王安石变法中的激进措施</li>
+                    <li>乌台诗案入狱一百三十天</li>
+                    <li>先后贬谪黄州、惠州、儋州</li>
+                    <li>任地方官期间政绩卓著</li>
+                </ul>
+            </div>
+        </div>
+        <div class="k-card">
+            <div class="k-card-title-vertical">
+                <div class="k-icon">🖌️</div>
+                <h3>书画艺术</h3>
+            </div>
+            <div class="k-card-content">
+                <div class="k-header">
+                    <span class="k-icon">🖌️</span>
+                    <h3>书画艺术</h3>
+                </div>
+                <p>书法位列"宋四家"之首，绘画提倡"文人画"，重神韵而轻形似，为后世文人画奠基。</p>
+                <ul>
+                    <li>代表作《寒食帖》被誉为"天下第三行书"</li>
+                    <li>提出"论画以形似，见与儿童邻"</li>
+                    <li>擅画枯木竹石，抒发孤傲不屈</li>
+                    <li>推动宋代文人画的发展</li>
+                </ul>
+            </div>
+        </div>
+        <div class="k-card">
+            <div class="k-card-title-vertical">
+                <div class="k-icon">☯️</div>
+                <h3>思想哲学</h3>
+            </div>
+            <div class="k-card-content">
+                <div class="k-header">
+                    <span class="k-icon">☯️</span>
+                    <h3>思想哲学</h3>
+                </div>
+                <p>以儒家经世济民为本，融合佛道思想，形成独特的旷达人生哲学与超然境界。</p>
+                <ul>
+                    <li>儒家：积极入世、忧国忧民</li>
+                    <li>道家：顺应自然、齐物逍遥</li>
+                    <li>佛家：看破执念、随缘自适</li>
+                    <li>"也无风雨也无晴"的三教融合</li>
+                </ul>
+            </div>
+        </div>
+        <div class="k-card">
+            <div class="k-card-title-vertical">
+                <div class="k-icon">🍜</div>
+                <h3>生活美学</h3>
+            </div>
+            <div class="k-card-content">
+                <div class="k-header">
+                    <span class="k-icon">🍜</span>
+                    <h3>生活美学</h3>
+                </div>
+                <p>即使在最困难的境遇中，也能把日子过成诗。精于美食、茶道、酿酒，极具情趣。</p>
+                <ul>
+                    <li>发明东坡肉、烤羊脊等美食</li>
+                    <li>精于品茶："从来佳茗似佳人"</li>
+                    <li>喜爱酿酒，作《东坡酒经》</li>
+                    <li>推崇"人间有味是清欢"</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div id="companion-pet" class="companion-pet">
+    <div class="pet-bubble" id="pet-bubble"></div>
+    <div class="pet-avatar-container">
+        <img src="scholar.png" alt="伴学书童" class="pet-image">
+    </div>
+</div>
+
+<footer>
+    <div class="seal-footer">蘇</div>
+    <p>江城子 · 密州出猎 — 词学研习网站</p>
+    <p style="margin-top:.5rem;opacity:.5">以墨为魂，以词为骨</p>
+</footer>
+
+<script>
+// ==========================================
+// D3.js 四层力导向图 - 超级丰富版本
+// ==========================================
+
+const graphData = [
+    { id: 'core', label: '苏轼', sub: '东坡居士', level: 0, category: 'core' },
+    
+    // 一级：六大维度
+    { id: 'lit', label: '文学', sub: '诗词文赋', level: 1, parent: 'core', category: 'lit' },
+    { id: 'pol', label: '政治', sub: '宦海沉浮', level: 1, parent: 'core', category: 'pol' },
+    { id: 'art', label: '艺术', sub: '书画双绝', level: 1, parent: 'core', category: 'art' },
+    { id: 'phi', label: '哲学', sub: '三教融通', level: 1, parent: 'core', category: 'phi' },
+    { id: 'life', label: '生活', sub: '人间烟火', level: 1, parent: 'core', category: 'life' },
+    { id: 'soc', label: '交游', sub: '人脉广阔', level: 1, parent: 'core', category: 'soc' },
+
+    // 二级：文学 (6个)
+    { id: 'lit1', label: '词', sub: '豪放派', level: 2, parent: 'lit', category: 'lit' },
+    { id: 'lit2', label: '诗', sub: '苏黄派', level: 2, parent: 'lit', category: 'lit' },
+    { id: 'lit3', label: '文', sub: '八大家', level: 2, parent: 'lit', category: 'lit' },
+    { id: 'lit4', label: '赋', sub: '赤壁赋', level: 2, parent: 'lit', category: 'lit' },
+    { id: 'lit5', label: '词', sub: '念奴娇', level: 2, parent: 'lit', category: 'lit' },
+    { id: 'lit6', label: '诗', sub: '西林壁', level: 2, parent: 'lit', category: 'lit' },
+
+    // 二级：政治 (5个)
+    { id: 'pol1', label: '乌台', sub: '文字狱', level: 2, parent: 'pol', category: 'pol' },
+    { id: 'pol2', label: '黄州', sub: '涅槃之地', level: 2, parent: 'pol', category: 'pol' },
+    { id: 'pol3', label: '惠州', sub: '日啖荔枝', level: 2, parent: 'pol', category: 'pol' },
+    { id: 'pol4', label: '儋州', sub: '天涯海角', level: 2, parent: 'pol', category: 'pol' },
+    { id: 'pol5', label: '杭州', sub: '疏浚河道', level: 2, parent: 'pol', category: 'pol' },
+
+    // 二级：艺术 (5个)
+    { id: 'art1', label: '书', sub: '宋四家', level: 2, parent: 'art', category: 'art' },
+    { id: 'art2', label: '画', sub: '文人画', level: 2, parent: 'art', category: 'art' },
+    { id: 'art3', label: '竹', sub: '墨竹', level: 2, parent: 'art', category: 'art' },
+    { id: 'art4', label: '石', sub: '怪石', level: 2, parent: 'art', category: 'art' },
+    { id: 'art5', label: '题跋', sub: '书法艺术', level: 2, parent: 'art', category: 'art' },
+
+    // 二级：哲学 (4个)
+    { id: 'phi1', label: '儒', sub: '经世济民', level: 2, parent: 'phi', category: 'phi' },
+    { id: 'phi2', label: '释', sub: '随缘自适', level: 2, parent: 'phi', category: 'phi' },
+    { id: 'phi3', label: '道', sub: '齐物逍遥', level: 2, parent: 'phi', category: 'phi' },
+    { id: 'phi4', label: '融通', sub: '三教合一', level: 2, parent: 'phi', category: 'phi' },
+
+    // 二级：生活 (5个)
+    { id: 'life1', label: '食', sub: '东坡肉', level: 2, parent: 'life', category: 'life' },
+    { id: 'life2', label: '茶', sub: '品茗艺', level: 2, parent: 'life', category: 'life' },
+    { id: 'life3', label: '酒', sub: '酒文化', level: 2, parent: 'life', category: 'life' },
+    { id: 'life4', label: '琴', sub: '音律和', level: 2, parent: 'life', category: 'life' },
+    { id: 'life5', label: '棋', sub: '博弈智', level: 2, parent: 'life', category: 'life' },
+
+    // 二级：交游 (5个)
+    { id: 'soc1', label: '辙', sub: '手足情', level: 2, parent: 'soc', category: 'soc' },
+    { id: 'soc2', label: '修', sub: '恩师心', level: 2, parent: 'soc', category: 'soc' },
+    { id: 'soc3', label: '学士', sub: '门生众', level: 2, parent: 'soc', category: 'soc' },
+    { id: 'soc4', label: '山谷', sub: '黄庭坚', level: 2, parent: 'soc', category: 'soc' },
+    { id: 'soc5', label: '高寿', sub: '秦少游', level: 2, parent: 'soc', category: 'soc' },
+
+    // 三级：丰富细节节点 (更多内容)
+    // 文学三级
+    { id: 'lit1a', label: '念奴娇', level: 3, parent: 'lit1', category: 'lit' },
+    { id: 'lit1b', label: '江城子', level: 3, parent: 'lit1', category: 'lit' },
+    { id: 'lit2a', label: '题西林', level: 3, parent: 'lit2', category: 'lit' },
+    { id: 'lit3a', label: '石钟山', level: 3, parent: 'lit3', category: 'lit' },
+    { id: 'lit4a', label: '前赤壁', level: 3, parent: 'lit4', category: 'lit' },
+    { id: 'lit4b', label: '后赤壁', level: 3, parent: 'lit4', category: 'lit' },
+
+    // 政治三级
+    { id: 'pol1a', label: '130天狱', level: 3, parent: 'pol1', category: 'pol' },
+    { id: 'pol2a', label: '雪堂', level: 3, parent: 'pol2', category: 'pol' },
+    { id: 'pol3a', label: '修堤', level: 3, parent: 'pol3', category: 'pol' },
+    { id: 'pol4a', label: '办学', level: 3, parent: 'pol4', category: 'pol' },
+
+    // 艺术三级
+    { id: 'art1a', label: '寒食帖', level: 3, parent: 'art1', category: 'art' },
+    { id: 'art2a', label: '论画', level: 3, parent: 'art2', category: 'art' },
+    { id: 'art3a', label: '竹石图', level: 3, parent: 'art3', category: 'art' },
+
+    // 生活三级
+    { id: 'life1a', label: '慢火烹', level: 3, parent: 'life1', category: 'life' },
+    { id: 'life2a', label: '汲江水', level: 3, parent: 'life2', category: 'life' },
+    { id: 'life3a', label: '酒经', level: 3, parent: 'life3', category: 'life' }
+];
+
+const links = graphData
+    .filter(d => d.parent)
+    .map(d => ({ source: d.parent, target: d.id }));
+
+const categoryColors = {
+    lit: '#e07856',
+    pol: '#8b7355',
+    art: '#d4a574',
+    phi: '#7b9daa',
+    life: '#a89968',
+    soc: '#c5a572'
+};
+
+const details = {
+    'core': {tag:'核心', title:'苏轼 · 东坡居士', text:'苏轼（1037-1101），字子瞻，号东坡居士，眉山人。北宋最伟大的文学家、书画家、政治家。一生宦海沉浮，却以旷达的胸襟和卓越的才华，在中国文化史上留下了不可磨灭的印记。他是罕见的全才——诗词文赋书画无所不精，同时也是一个热爱生活、重情重义的真性情之人。', works:['诗人','词人','散文家','书法家','画家','美食家','政治家']},
+    'lit': {tag:'维度 · 文学', title:'北宋文坛领袖', text:'苏轼在诗、词、散文、辞赋各个领域都达到了极高的造诣。他不仅开创了豪放词派，还是"唐宋八大家"之一，其诗文深刻影响了整个宋代及后世的文学走向。现存诗、词、文共2700多篇。', works:['诗2700+篇','词340余首','文130余篇','八大家成员']},
+    'lit1': {tag:'文学 · 词', title:'豪放词派开创者', text:'苏轼打破了"词为艳科"的传统，将词从花间月下解放出来，使之成为可以言志抒怀的文学形式。与辛弃疾并称"苏辛"，完全改变了词的气质。代表作有《江城子·密州出猎》《念奴娇·赤壁怀古》《水调歌头》等。', works:['《江城子·密州出猎》','《念奴娇·赤壁怀古》','《水调歌头》','《满庭芳》','《定风波》']},
+    'lit1a': {tag:'词作 · 代表', title:'念奴娇·赤壁怀古', text:'大江东去，浪淘尽，千古风流人物。这是苏轼最著名的词作，气势磅礴，意境高远，融历史、现实、哲理于一体，是中国词坛的巅峰之作。', works:['大江东去','遥想公瑾','故国神游']},
+    'lit1b': {tag:'词作 · 代表', title:'江城子·密州出猎', text:'老夫聊发少年狂，左牵黄，右擎苍。词中融入军事、狩猎、政治等多重意象，表现出苏轼的雄心壮志和壮阔情怀。', works:['少年狂','左牵黄','右擎苍','马革裹尸']},
+    'lit2': {tag:'文学 · 诗', title:'苏黄并称', text:'苏轼诗作题材广泛，风格多变。善于将哲理融入景物描写，运用新奇的意象。与黄庭坚并称"苏黄"，为宋诗的杰出代表。诗风兼具豪放与清新。', works:['《题西林壁》','《饮湖上初晴后雨》','《惠崇春江晓景》','《和子由踏青》']},
+    'lit2a': {tag:'诗作 · 代表', title:'题西林壁', text:'横看成岭侧成峰，远近高低各不同。不识庐山真面目，只缘身在此山中。短短四句，蕴含深刻的哲理，是认识论的经典诗篇。', works:['横看成岭','侧成峰','身在山中']},
+    'lit3': {tag:'文学 · 文', title:'唐宋八大家之一', text:'散文纵横恣肆、明白畅达，与欧阳修并称"欧苏"。主张"文以载道"，同时强调文章应"行云流水"，自然生动。散文创新性强，开创新风格。', works:['《石钟山记》','《记承天寺夜游》','《三槐堂铭》','《方山子传》']},
+    'lit3a': {tag:'散文 · 代表', title:'石钟山记', text:'为其山之怪特，在华夏古文献中首次对地理、地质现象进行科学解释，体现了苏轼的理性思维和现代意识。是唐宋散文的典范。', works:['地理解释','科学精神','文学性强']},
+    'lit4': {tag:'文学 · 赋', title:'千古绝唱《赤壁赋》', text:'元丰五年贬谪黄州期间所作的《前赤壁赋》《后赤壁赋》，将叙事、写景、抒情、议论完美结合，融景、人、理于一体，是中国辞赋史上的巅峰之作。文学地位举足轻重。', works:['《前赤壁赋》','《后赤壁赋》','《琴趣操赋》','《海棠花赋》']},
+    'lit4a': {tag:'赋作 · 前', title:'前赤壁赋', text:'苏轼与朋友乘舟游赤壁，述说人生如梦、物我两忘的感悟。以赋的形式，融景物、人事、哲理为一炉，开创赋的新境界。', works:['乘舟遗世','人生如梦','物我两忘']},
+    'lit4b': {tag:'赋作 · 后', title:'后赤壁赋', text:'再次游赤壁，感悟自然与人生的关系。相比前赋更加凝聚深沉，是苏轼思想最成熟的作品之一。', works:['二游赤壁','更深沉思','自然感悟']},
+    
+    'pol': {tag:'维度 · 政治', title:'宦海沉浮四十载', text:'苏轼二十一岁进士及第，本应一片光明。然因政见不合与乌台诗案，一生经历了三次重大贬谪。无论身处何地，他始终勤政爱民，泽被百姓。人生充满戏剧性和悲壮感。', works:['反对新法','三次贬谪','勤政爱民','人生转折']},
+    'pol1': {tag:'政治 · 事件', title:'乌台诗案', text:'元丰二年，苏轼被政敌诬陷讽刺新法，下狱130天几近丧命。这场文字狱深刻改变了他的创作风格与人生观，激发了更深刻的思想反思。是他人生的重大转折点。', works:['元丰二年','文字狱','130天','生死历劫']},
+    'pol1a': {tag:'狱中 · 经历', title:'乌台诗案详情', text:'苏轼因诗句被诬陷为讽刺新法。狱中受尽折磨，一度要被判死罪，幸得众人营救才免。此后人生观大变，更加通达旷达。', works:['死狱中','蒙恩赦','生死悟道']},
+    'pol2': {tag:'政治 · 贬谪', title:'黄州：涅槃之地', text:'贬为黄州团练副使，在此经历了人生的至暗时刻，但也迎来了精神的大彻大悟和文学创作的最高峰。在黄州的五年，创作了大量不朽之作。', works:['团练副使','五年沉思','文学高峰','赤壁三绝']},
+    'pol2a': {tag:'黄州 · 遗迹', title:'东坡雪堂', text:'苏轼在黄州居住过的地方，后人为纪念他而建。在此期间，他开垦农田、辅导儿孙、创作不辍，树立了"苏轼"这一典范人格。', works:['开田农作','家庭教育','思想成熟']},
+    'pol3': {tag:'政治 · 贬谪', title:'惠州：日啖荔枝', text:'晚年被贬岭南惠州，在此写下"日啖荔枝三百颗，不辞长作岭南人"，展现出极强的适应力和乐观精神。将贬谪变成了游历，把困厄化作诗意。', works:['日啖荔枝','岭南风物','乐观精神']},
+    'pol3a': {tag:'惠州 · 政绩', title:'修桥筑堤', text:'苏轼虽身处贬谪之地，仍不忘为民造福。在惠州修建西湖堤坝，改善民生，深受百姓拥戴。体现了高尚的政治操守。', works:['西湖堤坝','为民服务','德政流芳']},
+    'pol4': {tag:'政治 · 贬谪', title:'儋州：天涯海角', text:'被流放至海南岛儋州（当时视为绝境），他却"九死南荒吾不恨"，在此办学授课，开启了海南的文脉，留下深远影响。人生最后的辉煌。', works:['天涯海角','九死不恨','办学教化']},
+    'pol4a': {tag:'儋州 · 文化', title:'办学授课', text:'苏轼在儋州创办学堂，教化当地民众，将中原文化带到边远地区。培养了大批学生，开启了海南的文脉，被尊为海南文化的奠基人之一。', works:['创办学堂','教化文明','文脉传承']},
+    'pol5': {tag:'政治 · 治绩', title:'杭州：疏浚河道', text:'苏轼任杭州知州期间，疏浚西湖，建堤防洪。这条著名的"苏堤"至今保存，两侧杨柳成荫，风景优美。是他仁民爱物精神的永恒纪念。', works:['苏堤','疏浚西湖','防洪御灾']},
+
+    'art': {tag:'维度 · 艺术', title:'书画双绝', text:'苏轼不仅是文学家，也是北宋顶级的书法家和画家。他提倡文人画，强调整体神韵而非外在形似，为后世文人画的发展奠定了理论基础。艺术成就等同于文学。', works:['宋四家','文人画宗师','书法艺术','绘画创新']},
+    'art1': {tag:'艺术 · 书法', title:'天下第三行书', text:'书法列"宋四家"（苏黄米蔡）之首。主张"我书意造本无法，外师造化中得心"。代表作《黄州寒食帖》被誉为"天下第三行书"（仅次于王羲之《兰亭序》和颜真卿《祭侄稿》）。', works:['《黄州寒食帖》','《赤壁赋卷》','《祭黄几道文》']},
+    'art1a': {tag:'书法 · 绝笔', title:'寒食帖', text:'诗句："明月清风夜半时，万人万马在空际。"笔势萧散，意境高远。被誉为"天下第三行书"，现藏台北故宫博物院。是苏轼书法成就的最高代表。', works:['行书绝唱','意境高远','万人称绝']},
+    'art2': {tag:'艺术 · 画论', title:'文人画理论奠基', text:'提出"论画以形似，见与儿童邻"，反对匠气。主张以画写意、表达文人高洁情操，为后世文人画奠基并深刻影响了中国画论。是中国绘画美学的重要转折。', works:['重神似','反匠气','文人精神','笔墨意韵']},
+    'art2a': {tag:'绘画 · 理论', title:'论画要旨', text:'苏轼认为："论画以形似，见与儿童邻也。"绘画应该追求神韵而非形似，这一论点彻底改变了中国画的发展方向，使绘画从"工笔"升华为"写意"。', works:['形似之弊','神韵为贵','文人境界']},
+    'art3': {tag:'艺术 · 画竹', title:'墨竹之祖', text:'苏轼擅画墨竹。其竹画用笔洒脱，寥寥数笔即传其神韵，开创了"文人画竹"的新风格。影响了后世无数画家，被誉为"墨竹之祖"。', works:['墨竹图','寥寥数笔','神韵生动']},
+    'art3a': {tag:'竹画 · 成就', title:'竹石图', text:'苏轼的竹画成为文人画的典范。简淡中见意境，粗粝中见性情。改变了唐宋以来工笔描绘竹石的做法，开创了新风格。', works:['意笔工笔','文人性情','后世典范']},
+    'art4': {tag:'艺术 · 怪石', title:'怪石法则', text:'苏轼擅长画怪石。所画怪石形态奇诡，盘踞怪张，抒发胸中盘结的孤傲与不屈。其怪石画法深刻影响了后世的绘画创新。', works:['怪石图','形态奇诡','性情抒发']},
+    'art5': {tag:'艺术 · 题跋', title:'题跋书法', text:'苏轼在书画作品上的题跋书法，同样出众。题跋往往成为作品本身的一部分，笔墨生动，意趣盎然，是文人书法的典范。', works:['题跋墨迹','笔墨生动','文化高度']},
+
+    'phi': {tag:'维度 · 哲学', title:'三教融通', text:'苏轼的思想兼收并蓄：以儒家精神积极入世、经世济民；以道家思想超然物外、齐物逍遥；以佛家智慧化解苦难、看破红尘。三教融通，形成独特的旷达人生观。这是中国传统知识分子的最高境界。', works:['儒释道合一','也无风雨也无晴','圆融智慧']},
+    'phi1': {tag:'哲学 · 儒',title:'达则兼济天下', text:'骨子里有着儒家知识分子的责任感。虽屡遭打击，但只要有机会为官，便积极兴修水利、救灾恤民，体现了深厚的民本意识。这是他在政治上的执着追求。', works:['经世致用','忧国忧民','为民请命']},
+    'phi2': {tag:'哲学 · 佛', title:'随缘自适', text:'深受禅宗影响，能够在逆境中看破执念，"胜固欣然，败亦可喜"，化解了政治上的巨大痛苦，获得了内心的自在安乐。这是他能够度过人生苦难的精神支撑。', works:['看破放下','禅意解脱','无常观','化苦为乐']},
+    'phi3': {tag:'哲学 · 道', title:'齐物逍遥', text:'汲取老庄思想，追求精神的绝对自由。"寄蜉蝣于天地，渺沧海之一粟"，在天地自然中获得解脱，不为物累。这是他超越现实困顿的精神寄托。', works:['超然物外','逍遥游','天地之心','物我两忘']},
+    'phi4': {tag:'哲学 · 融', title:'三教合一', text:'苏轼不是单纯的儒家、佛家或道家信徒，而是将三教思想融为一体。在不同的人生阶段，调用不同的思想资源来应对挑战。这是中国传统文人的最高智慧。', works:['圆融贯通','境界提升','人生艺术']},
+
+    'life': {tag:'维度 · 生活', title:'人间烟火', text:'苏轼是中国文人中最富生活情趣的人。即使在最困难的境遇中，也能把日子过成诗。他的生活美学堪称典范，影响了后世无数文人的生活态度。', works:['美食家','酿酒师','茶道','生活哲学']},
+    'life1': {tag:'生活 · 美食', title:'东坡肉传奇', text:'在黄州穷困时发明了"慢著火，少著水，火候足时它自美"的东坡肉；在惠州发明烤羊脊骨。能化苦难为美味，是真正的生活艺术家。这道菜至今流传，成为经典。', works:['东坡肉','东坡饼','烤羊脊','羹汤之道']},
+    'life1a': {tag:'美食 · 烹法', title:'慢火烹调', text:'苏轼的烹饪哲学是"慢著火，少著水"。这种烹法强调耐心和细致，体现了他对生活品质的追求。即使在贬谪之地，也能创造出美味，展现了生活的智慧。', works:['品质追求','耐心细致','人生启示']},
+    'life2': {tag:'生活 · 茶道', title:'佳茗似佳人', text:'极懂品茶，对水、茶具、火候都有深究。留下大量咏茶名句如"从来佳茗似佳人"，是中国茶文化史上的重要人物。他的茶艺思想影响深远。', works:['佳茗似佳人','汲江煎茶','茶之四韵','水品论']},
+    'life2a': {tag:'茶道 · 名句', title:'汲江水煎茶', text:'"汲江水烹茶"是苏轼的名句。他认为水的品质同样重要。选择不同的水煎不同的茶，体现了他对生活细节的极致追求。', works:['水品论','煎茶艺','寻味之心']},
+    'life3': {tag:'生活 · 酿酒', title:'东坡酒经', text:'喜爱饮酒且热衷自己酿酒。甚至专门撰写了《东坡酒经》，记载了独特的酿酒方法，是中国酒文化的重要文献。饮酒成为了他的人生哲学。', works:['真一酒','桂酒','蜜酒','酒经传承']},
+    'life3a': {tag:'酒文 · 经验', title:'酒经著述', text:'《东坡酒经》详细记载了酿酒的各个环节，从选料到发酵再到成酒，都有独到见解。这部著作为后世酿酒技艺的发展提供了理论指导。', works:['工艺文献','技艺传承','文化价值']},
+    'life4': {tag:'生活 · 琴', title:'琴中高手', text:'苏轼精通琴艺，认为琴是修养性情的工具。他弹琴不为取悦他人，而是与琴对话，表达内心世界。琴成为了他精神生活的重要部分。', works:['琴艺高超','情感寄托','灵魂对话']},
+    'life5': {tag:'生活 · 棋', title:'棋局人生', text:'苏轼也喜爱下棋，视棋局为人生的缩影。通过下棋感悟人生的得失与智慧。棋、琴、书、画，共同构成了他完整的生活美学体系。', works:['棋艺精湛','人生比喻','智慧启示']},
+
+    'soc': {tag:'维度 · 交游', title:'人脉广阔', text:'苏轼为人真诚率性，一生结交极广。上有恩师欧阳修提携，下有众多门生追随，且与弟弟苏辙感情极深，人脉之广为宋代罕见。这种人际网络支撑了他的人生。', works:['苏门四学士','手足情深','师生互勉']},
+    'soc1': {tag:'交游 · 亲情', title:'与弟苏辙', text:'"但愿人长久，千里共婵娟"便是写给弟弟苏辙（子由）。两人一生患难与共，书信往来无数，是中国文学史上最感人的手足情话。这种兄弟情谊令人动容。', works:['子由情深','明月几时有','共沐云月']},
+    'soc2': {tag:'交游 · 恩师', title:'欧阳修提携', text:'科举时欧阳修对其大为赞赏："老夫当避路，放他出一头地也。"苏轼完美继承了欧阳修的古文传统，继续发扬光大。恩师的认可改变了他的人生轨迹。', works:['古文运动','伯乐识人','薪火相传']},
+    'soc3': {tag:'交游 · 门生', title:'苏门四学士', text:'黄庭坚、秦观、晁补之、张耒四人游于苏轼门下，称为"苏门四学士"，皆为北宋文坛的杰出名家。苏轼的影响力通过这些弟子得以传承和发扬。', works:['黄庭坚','秦观','晁补之','张耒']},
+    'soc4': {tag:'交游 · 友人', title:'黄庭坚·山谷', text:'黄庭坚字鲁直，号山谷道人，是苏轼的得力弟子。诗书画三绝，与苏轼并称"苏黄"。两人在诗歌创新上有共同追求，共同推动了北宋文学的发展。', works:['苏黄并称','诗歌创新','山谷传承']},
+    'soc5': {tag:'交游 · 友人', title:'秦观·少游', text:'秦观字太虔，号淮海居士，是苏轼器重的弟子。词作清婉动人，《踏莎行·郴州旅舍》是其代表作。秦观代表了苏轼弟子中的柔美风格，丰富了宋词的表现力。', works:['淮海词人','清婉动人','郴州悲欢']}
+};
+
+function initD3Graph() {
+    const container = document.getElementById('topology-canvas');
+    const width = container.offsetWidth;
+    const height = container.offsetHeight;
+
+    const svg = d3.select('#topology-canvas').insert('svg', ':first-child')
+        .attr('width', width)
+        .attr('height', height);
+
+    // 创建力导向模拟
+    const simulation = d3.forceSimulation(graphData)
+        .force('link', d3.forceLink(links)
+            .id(d => d.id)
+            .distance(d => {
+                if (d.source.level === 0 || d.target.level === 0) return 150;
+                if (d.source.level === 1 || d.target.level === 1) return 110;
+                return 70;
+            })
+            .strength(0.15))
+        .force('charge', d3.forceManyBody().strength(d => {
+            if (d.level === 0) return -600;
+            if (d.level === 1) return -350;
+            if (d.level === 2) return -180;
+            return -80;
+        }))
+        .force('center', d3.forceCenter(width / 2, height / 2).strength(0.06))
+        .force('collide', d3.forceCollide(d => {
+            if (d.level === 0) return 65;
+            if (d.level === 1) return 48;
+            if (d.level === 2) return 32;
+            return 20;
+        }));
+
+    // 绘制连线
+    const linkElements = svg.selectAll('.topo-link')
+        .data(links)
+        .enter()
+        .append('line')
+        .attr('class', 'topo-link');
+
+    // 绘制节点组
+    const nodeElements = svg.selectAll('.topo-node')
+        .data(graphData)
+        .enter()
+        .append('g')
+        .attr('class', d => `topo-node level-${d.level} cat-${d.category}`)
+        .call(d3.drag()
+            .on('start', dragStarted)
+            .on('drag', dragged)
+            .on('end', dragEnded));
+
+    // 添加圆形背景
+    nodeElements.append('circle')
+        .attr('r', d => {
+            if (d.level === 0) return 48;
+            if (d.level === 1) return 36;
+            if (d.level === 2) return 26;
+            return 16;
+        })
+        .attr('fill', d => {
+            if (d.level === 0) return '#fff';
+            if (d.level === 1) return categoryColors[d.category];
+            if (d.level === 2) return 'var(--paper-light)';
+            return 'rgba(194, 58, 43, 0.08)';
+        })
+        .attr('stroke', d => {
+            if (d.level === 0) return 'var(--seal-red)';
+            if (d.level === 1) return categoryColors[d.category];
+            if (d.level === 2) return 'rgba(0,0,0,0.12)';
+            return 'rgba(194, 58, 43, 0.25)';
+        });
+
+    // 添加主标签
+    nodeElements.append('text')
+        .text(d => d.label)
+        .attr('text-anchor', 'middle')
+        .attr('dominant-baseline', 'middle');
+
+    // 添加副标签（一级和二级节点）
+    nodeElements.filter(d => d.level === 1 || d.level === 2)
+        .append('text')
+        .attr('class', 'sub-label')
+        .text(d => d.sub)
+        .attr('y', d => d.level === 1 ? 14 : 11)
+        .attr('text-anchor', 'middle')
+        .attr('dominant-baseline', 'middle');
+
+    // 缩放交互
+    svg.call(d3.zoom()
+        .on('zoom', (event) => {
+            svg.attr('transform', event.transform);
+        }));
+
+    // 每次 tick 更新位置
+    simulation.on('tick', () => {
+        linkElements
+            .attr('x1', d => d.source.x)
+            .attr('y1', d => d.source.y)
+            .attr('x2', d => d.target.x)
+            .attr('y2', d => d.target.y);
+
+        nodeElements.attr('transform', d => `translate(${d.x},${d.y})`);
+    });
+
+    // 节点交互
+    nodeElements.on('click', (event, d) => {
+        showDetail(d.id);
+    });
+
+    nodeElements.on('mouseenter', (event, d) => {
+        linkElements.classed('dimmed', true).classed('active', false);
+        nodeElements.classed('dimmed', true);
+
+        nodeElements.filter(n => n.id === d.id).classed('dimmed', false);
+
+        if (d.level === 0) {
+            nodeElements.classed('dimmed', false);
+            linkElements.classed('dimmed', false).classed('active', true);
+        } else {
+            const relatedLinks = links.filter(l => 
+                l.source.id === d.id || l.target.id === d.id
+            );
+            linkElements.classed('active', l => relatedLinks.includes(l))
+                .classed('dimmed', l => !relatedLinks.includes(l));
+
+            relatedLinks.forEach(l => {
+                nodeElements.filter(n => 
+                    n.id === l.source.id || n.id === l.target.id
+                ).classed('dimmed', false);
+            });
+        }
+    });
+
+    nodeElements.on('mouseleave', () => {
+        nodeElements.classed('dimmed', false);
+        linkElements.classed('dimmed', false).classed('active', false);
+    });
+
+    function dragStarted(event, d) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+    }
+
+    function dragged(event, d) {
+        d.fx = event.x;
+        d.fy = event.y;
+    }
+
+    function dragEnded(event, d) {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+    }
+}
+
+window.addEventListener('DOMContentLoaded', initD3Graph);
+
+function showDetail(key){
+    const d=details[key];
+    if(!d)return;
+    document.getElementById('panel-tag').textContent=d.tag;
+    document.getElementById('panel-title').textContent=d.title;
+    document.getElementById('panel-text').textContent=d.text;
+    const w=document.getElementById('panel-works');
+    w.innerHTML=d.works.map(i=>'<span>'+i+'</span>').join('');
+    document.getElementById('detail-panel').classList.add('open');
+    document.getElementById('overlay').classList.add('open');
+}
+function closeDetail(){
+    document.getElementById('detail-panel').classList.remove('open');
+    document.getElementById('overlay').classList.remove('open');
+}
+
+// 伴学精灵
+window.addEventListener('DOMContentLoaded', function() {
+    const pet = document.getElementById('companion-pet');
+    const bubble = document.getElementById('pet-bubble');
+    if(!pet || !bubble) return;
+    const quotes = [
+        "这满天星斗般的知识图谱，公子可满意？", 
+        "先生不仅词写得好，东坡肉也很好吃哦~", 
+        "点击这些发光的星辰，有惊喜！", 
+        "拖拽节点，自由探索东坡精神宇宙吧~",
+        "44个知识节点，尽在其中~"
+    ];
+    function showRandomQuote() {
+        bubble.innerHTML = quotes[Math.floor(Math.random() * quotes.length)];
+        bubble.classList.add('active');
+        setTimeout(() => { bubble.classList.remove('active'); }, 5000);
+    }
+    pet.addEventListener('click', function() { window.location.href = 'chat5.html'; });
+    setTimeout(() => { bubble.innerHTML = quotes[0]; bubble.classList.add('active'); setTimeout(() => { bubble.classList.remove('active'); }, 5000); }, 2000);
+    setInterval(showRandomQuote, 15000);
+});
+</script>
+</body> 
+</html>
