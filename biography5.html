@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>苏轼生平 — 词学研习</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;300;400;500;600;700;900&family=Ma+Shan+Zheng&display=swap');
+        :root{--ink-black:#1a1a1a;--ink-dark:#2c2c2c;--ink-gray:#555;--ink-light:#888;--paper:#f5f0e8;--seal-red:#c23a2b;--accent-red:#8b2500}
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink-black);overflow-x:hidden}
+
+        /* ===== 公共导航 ===== */
+        nav{position:fixed;top:0;left:0;width:100%;z-index:9000;background:rgba(26,26,26,.95);backdrop-filter:blur(15px);box-shadow:0 2px 30px rgba(0,0,0,.3);padding:.6rem 0}
+        nav .nav-inner{max-width:1400px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between}
+        nav .logo{font-family:'Ma Shan Zheng',cursive;font-size:1.6rem;color:var(--paper);text-decoration:none;display:flex;align-items:center;gap:.5rem}
+        nav .logo .seal-sm{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:2px solid var(--seal-red);color:var(--seal-red);font-size:.9rem}
+        nav ul{display:flex;list-style:none;gap:.3rem}
+        nav ul li a{color:rgba(245,240,232,.7);text-decoration:none;font-size:.9rem;padding:.5rem 1rem;border-radius:4px;transition:.3s;position:relative}
+        nav ul li a:hover,nav ul li a.active{color:var(--paper);background:rgba(245,240,232,.08)}
+        nav ul li a.active::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:20px;height:2px;background:var(--seal-red)}
+        .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer}
+        .hamburger span{width:25px;height:2px;background:var(--paper);transition:.3s}
+
+        /* ===== 页面头部 ===== */
+        .page-hero{min-height:60vh;display:flex;align-items:center;justify-content:center;background:var(--ink-black);position:relative;overflow:hidden;text-align:center}
+        .page-hero::before{content:'蘇';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Ma Shan Zheng',cursive;font-size:40vw;color:rgba(245,240,232,.02);pointer-events:none}
+        .page-hero::after {
+            content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+            background-image: linear-gradient(to right, rgba(26, 26, 26, 1) 0%, rgba(26, 26, 26, 0.95) 20%, rgba(26, 26, 26, 0.75) 45%, rgba(26, 26, 26, 0.3) 75%, rgba(26, 26, 26, 0) 100%), url("./bg-calligraphy.png");
+            background-repeat: no-repeat; background-position: right -2% center; background-size: min(980px, 75vw) auto;
+            opacity: 0.75; filter: grayscale(0.15) contrast(1.05) saturate(0.85) blur(0.25px);
+            mask-image: linear-gradient(to right, transparent 0%, transparent 15%, black 85%, black 100%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, transparent 15%, black 85%, black 100%);
+        }
+        .page-hero-content{ position:relative; z-index:2; padding:2rem }
+        .page-hero-content .label{display:inline-block;font-size:.8rem;letter-spacing:6px;color:rgba(245,240,232,.4);border:1px solid rgba(245,240,232,.15);padding:.3rem 1.2rem;margin-bottom:1.5rem}
+        .page-hero-content h1{font-family:'Ma Shan Zheng',cursive;font-size:clamp(2.5rem,6vw,5rem);color:var(--paper);margin-bottom:1rem}
+        .page-hero-content p{color:rgba(245,240,232,.5);font-size:1.1rem;max-width:600px;margin:0 auto;line-height:1.8}
+
+        /* ===== 通用区块标题 ===== */
+        .section-header{text-align:center;margin-bottom:4rem}
+        .section-header .label{display:inline-block;font-size:.8rem;letter-spacing:6px;color:var(--ink-light);border:1px solid rgba(0,0,0,.1);padding:.3rem 1.2rem;margin-bottom:1.5rem}
+        .section-header h2{font-family:'Ma Shan Zheng',cursive;font-size:clamp(2rem,4vw,3.5rem);margin-bottom:1rem;color:var(--ink-black)}
+        .section-header .divider{width:60px;height:2px;background:var(--seal-red);margin:0 auto}
+
+        /* ===== 全局滚动出现动画特效 ===== */
+        .reveal-up {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: opacity, transform;
+        }
+        .reveal-up.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== 浮生如梦 区域包裹 ===== */
+        .timeline-wrapper {
+            background-color: var(--paper);
+            padding-top: 6rem;
+            position: relative;
+        }
+
+        /* ===== 全新：人生足迹互动地图 (带流云特效) ===== */
+        .map-journey-section {
+            position: relative;
+            width: 100%;
+            height: 90vh;
+            min-height: 700px;
+            background-image: 
+                radial-gradient(circle at center, transparent 0%, rgba(245, 240, 232, 0.8) 100%),
+                url('map.jpg');
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+
+        /* 顶部/底部羽化淡出 */
+        .map-journey-section::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(to bottom, var(--paper) 0%, transparent 10%, transparent 80%, var(--paper) 100%);
+            pointer-events: none; z-index: 1;
+        }
+
+        /* 【新增特效】光影/雾气缓缓流转 */
+        .map-journey-section::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.4) 0%, transparent 60%);
+            background-size: 200% 200%;
+            animation: fogDrift 25s infinite alternate ease-in-out;
+            pointer-events: none;
+            z-index: 5;
+        }
+        @keyframes fogDrift {
+            0% { background-position: -20% 50%; opacity: 0.2; transform: scale(1); }
+            100% { background-position: 120% 50%; opacity: 0.6; transform: scale(1.1); }
+        }
+
+        .map-container { position: relative; width: 100%; max-width: 1200px; height: 100%; margin: 0 auto; z-index: 10; }
+
+        /* 地图锚点呼吸灯增强 */
+        .map-pin {
+            position: absolute; cursor: pointer; display: flex; flex-direction: column; align-items: center;
+            transform: translate(-50%, -50%); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 50; 
+        }
+        .map-pin:hover { transform: translate(-50%, -50%) scale(1.15); z-index: 60; }
+        .map-pin.active .pin-pulse { background-color: var(--ink-dark); box-shadow: 0 0 0 4px rgba(44, 44, 44, 0.2); }
+        .map-pin.active .pin-label { background: var(--ink-dark); color: var(--paper); padding: 2px 8px; border-radius: 4px; }
+        
+        .pin-pulse {
+            width: 14px; height: 14px; background-color: var(--seal-red); border-radius: 50%;
+            box-shadow: 0 0 0 0 rgba(194,58,43, 0.7); animation: pulse 2s infinite; border: 2px solid var(--paper); transition: 0.3s;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(194,58,43, 0.6); }
+            70% { box-shadow: 0 0 0 15px rgba(194,58,43, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(194,58,43, 0); }
+        }
+        .pin-label {
+            margin-top: 8px; font-family: 'Ma Shan Zheng', cursive; color: var(--seal-red);
+            font-size: 1.1rem; letter-spacing: 2px; transition: 0.3s; text-shadow: 0 2px 4px rgba(255,255,255,0.8);
+        }
+
+        /* 悬浮信息面板 */
+        .journey-info-panel {
+            position: absolute; top: 50%; width: 400px;
+            background: rgba(245, 240, 232, 0.88); /* 微微偏纸色的毛玻璃 */
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(194, 58, 43, 0.1); /* 红色的极细边框 */
+            box-shadow: 0 20px 50px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(255,255,255,0.5);
+            padding: 3rem 2.5rem; opacity: 0; pointer-events: none;
+            transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), left 0.6s ease, right 0.6s ease;
+            z-index: 20; border-radius: 2px;
+        }
+        .journey-info-panel.align-right { right: 5%; left: auto; transform: translateY(-50%); }
+        .journey-info-panel.align-left { left: 5%; right: auto; transform: translateY(-50%); }
+        .journey-info-panel.active { opacity: 1; pointer-events: auto; transform: translateY(-50%) translateX(0); }
+        .journey-info-panel.align-right.inactive-slide { transform: translateY(-50%) translateX(30px); }
+        .journey-info-panel.align-left.inactive-slide { transform: translateY(-50%) translateX(-30px); }
+        
+        .panel-year { font-family: 'Ma Shan Zheng', cursive; font-size: 2rem; color: var(--seal-red); margin-bottom: 0.5rem; display: block; }
+        .panel-title { font-family: 'Ma Shan Zheng', cursive; font-size: 1.8rem; color: var(--ink-dark); margin-bottom: 1.5rem; }
+        .panel-desc { font-size: 0.95rem; line-height: 2; color: var(--ink-gray); margin-bottom: 2rem; }
+        .panel-tag {
+            position: absolute; top: 3rem; right: 2.5rem; writing-mode: vertical-rl; letter-spacing: 4px; padding: 10px 4px;
+            color: var(--seal-red); border: 1px solid rgba(194,58,43,0.3); font-size: 0.85rem; font-family: 'Ma Shan Zheng', cursive; opacity: 0.8;
+        }
+
+        /* ===== 人格魅力 ===== */
+        .character-section {
+            position: relative;
+            padding: 6rem 2rem 10rem 2rem;
+            background-color: var(--paper); 
+            overflow: hidden; /* 保证巨大的水印文字不会撑破页面 */
+        }
+
+        /* 【新增特效】书法水印：左侧 */
+        .character-section::before {
+            content: '一蓑烟雨任平生';
+            position: absolute;
+            top: 10%; left: 2%;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 12rem;
+            color: rgba(0,0,0,0.02); /* 极淡的墨迹 */
+            writing-mode: vertical-rl;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        /* 【新增特效】书法水印：右侧 */
+        .character-section::after {
+            content: '也无风雨也无晴';
+            position: absolute;
+            bottom: 5%; right: 2%;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 12rem;
+            color: rgba(0,0,0,0.02);
+            writing-mode: vertical-rl;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .char-grid { 
+            max-width: 1200px; margin: 0 auto; display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; 
+            position: relative; z-index: 2; /* 确保卡片在水印上方 */
+        }
+        
+        /* 为卡片添加交错的出现延迟 */
+        .char-card:nth-child(1) { transition-delay: 0.1s; }
+        .char-card:nth-child(2) { transition-delay: 0.2s; }
+        .char-card:nth-child(3) { transition-delay: 0.3s; }
+        .char-card:nth-child(4) { transition-delay: 0.4s; }
+        .char-card:nth-child(5) { transition-delay: 0.5s; }
+        .char-card:nth-child(6) { transition-delay: 0.6s; }
+
+        /* 但如果已经显示了，hover的时候取消延迟，否则hover变卡 */
+        .char-card.is-visible { transition-delay: 0s; }
+
+        .char-card {
+            background: rgba(255, 255, 255, 0.7); 
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+            padding: 2.2rem 1.8rem; 
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative; overflow: hidden; display: flex; flex-direction: column;
+        }
+        .char-card:hover {
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-8px);
+            border-color: rgba(194, 58, 43, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06), 0 0 20px rgba(194, 58, 43, 0.05);
+        }
+        .char-card::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 3px;
+            background: linear-gradient(90deg, transparent, var(--seal-red), transparent);
+            transition: width 0.6s ease;
+        }
+        .char-card:hover::after { width: 100%; }
+
+        .seal-icon {
+            width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center;
+            border: 2px solid var(--seal-red); color: var(--seal-red); font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1.4rem; border-radius: 4px; margin-bottom: 1.2rem; position: relative;
+        }
+        /* 给印章加一个轻微的纸纹质感叠加 */
+        .seal-icon::after {
+            content:''; position:absolute; inset:0; background: url('https://www.transparenttextures.com/patterns/rice-paper-2.png');
+            opacity: 0.3; pointer-events: none; mix-blend-mode: multiply;
+        }
+
+        .char-card h3 { font-family: 'Ma Shan Zheng', cursive; font-size: 1.4rem; color: var(--ink-black); margin-bottom: 0.8rem; letter-spacing: 2px; }
+        .char-card p { font-size: .9rem; line-height: 1.8; color: var(--ink-gray); flex-grow: 1; }
+        .char-card .quote { 
+            margin-top: 1.2rem; padding: 0.8rem 1.2rem; border-left: 2px solid var(--seal-red); font-style: italic; 
+            color: var(--ink-dark); font-size: .85rem; background: linear-gradient(90deg, rgba(194,58,43,0.04), transparent); 
+        }
+
+        /* ===== 页脚 ===== */
+        footer{background:var(--ink-black);border-top:1px solid rgba(245,240,232,.08);padding:3rem 2rem;text-align:center; position:relative; z-index:10;}
+        footer p{color:rgba(245,240,232,.3);font-size:.8rem;letter-spacing:2px}
+        footer .seal-footer{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:2px solid rgba(194,58,43,.4);color:rgba(194,58,43,.6);font-family:'Ma Shan Zheng',cursive;font-size:1.2rem;margin-bottom:1rem}
+
+        @media(max-width:900px){
+            .hamburger{display:flex}
+            nav ul{position:fixed;top:0;right:-100%;width:70%;height:100vh;background:rgba(26,26,26,.98);flex-direction:column;padding:5rem 2rem;transition:right .4s;gap:.5rem}
+            nav ul.open{right:0}
+            .map-journey-section { height: auto; min-height: 80vh; flex-direction: column; padding-top: 4rem; }
+            .map-container { height: 400px; }
+            .journey-info-panel, .journey-info-panel.align-left, .journey-info-panel.align-right {
+                position: relative; right: auto; left: auto; transform: none !important; width: 90%; margin: 2rem auto;
+            }
+            .journey-info-panel.active { transform: none !important; }
+            .journey-info-panel.inactive-slide { transform: translateY(20px) !important; }
+            .character-section::before, .character-section::after { display: none; /* 手机端隐藏巨大的水印 */ }
+        }
+
+        /* ====== 伴学灵宝 (国风书童) ====== */
+        .companion-pet {
+            position: fixed; bottom: 20px; right: 30px; z-index: 9999;
+            display: flex; flex-direction: column; align-items: center;
+            cursor: pointer; animation: floatAnim 4s ease-in-out infinite;
+        }
+        .pet-avatar-container {
+            width: 120px; height: auto; display: flex; align-items: flex-end;
+            justify-content: center; position: relative;
+        }
+        .pet-image {
+            width: 100%; height: auto; object-fit: contain;
+            filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.3)) drop-shadow(0px 0px 8px rgba(245,240,232,0.2));
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: breatheAnim 3s ease-in-out infinite alternate;
+        }
+        .companion-pet:hover .pet-image {
+            transform: scale(1.08) translateY(-5px);
+            filter: drop-shadow(0px 15px 20px rgba(0,0,0,0.4)) drop-shadow(0px 0px 12px rgba(194,58,43,0.4));
+        }
+        .pet-bubble {
+            background: rgba(26, 26, 26, 0.92); color: #f5f0e8;
+            padding: 0.8rem 1.2rem; border-radius: 12px; font-size: 0.85rem;
+            line-height: 1.6; margin-bottom: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid rgba(245,240,232,0.15);
+            position: relative; opacity: 0; transform: translateY(10px);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            pointer-events: none; width: max-content; max-width: 200px;
+            text-align: center; letter-spacing: 1px;
+        }
+        .pet-bubble::after {
+            content: ''; position: absolute; bottom: -6px; left: 50%;
+            transform: translateX(-50%); border-left: 6px solid transparent;
+            border-right: 6px solid transparent; border-top: 6px solid rgba(26, 26, 26, 0.92);
+        }
+        .companion-pet:hover .pet-bubble, .pet-bubble.active {
+            opacity: 1; transform: translateY(0);
+        }
+        @keyframes floatAnim { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes breatheAnim { 0% { transform: scaleY(1) scaleX(1); } 100% { transform: scaleY(1.02) scaleX(0.99); } }
+        @media (max-width: 768px) {
+            .pet-avatar-container { width: 90px; }
+            .companion-pet { right: 10px; bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-inner">
+        <a href="index5.html" class="logo"><span class="seal-sm">蘇</span>词学研习</a>
+        <div class="hamburger" onclick="document.getElementById('nav-menu').classList.toggle('open')"><span></span><span></span><span></span></div>
+        <ul id="nav-menu">
+            <li><a href="index5.html">首页</a></li>
+            <li><a href="biography5.html" class="active">苏轼生平</a></li>
+            <li><a href="analysis5.html">词作解析</a></li>
+            <li><a href="knowledge5.html">知识拓扑</a></li>
+            <li><a href="quiz5.html">课后练习</a></li>
+            <li><a href="chat5.html">知识问答</a></li>
+            <li><a href="summary5.html">回顾总结</a></li>
+        </ul>
+    </div>
+</nav>
+
+<section class="page-hero">
+    <div class="page-hero-content reveal-up">
+        <span class="label">人 · 物 · 传 · 记</span>
+        <h1>苏轼传</h1>
+        <p>一蓑烟雨任平生，也无风雨也无晴。<br>走进千年前那个旷达洒脱的灵魂。</p>
+    </div>
+</section>
+
+<div class="timeline-wrapper">
+    <!-- 增加 reveal-up 让标题滚动浮现 -->
+    <div class="section-header reveal-up">
+        <span class="label">生 · 平 · 年 · 表</span>
+        <h2>浮生如梦</h2>
+        <div class="divider"></div>
+    </div>
+
+    <section class="map-journey-section reveal-up">
+        <div class="map-container">
+            <div class="map-pin" style="top: 48%; left: 12%;" onclick="updateJourney('meishan', this)">
+                <span class="pin-pulse"></span><span class="pin-label">眉山</span>
+            </div>
+            <div class="map-pin" style="top: 32%; left: 28%;" onclick="updateJourney('kaifeng', this)">
+                <span class="pin-pulse"></span><span class="pin-label">汴京</span>
+            </div>
+            <div class="map-pin" style="top: 42%; left: 50%;" onclick="updateJourney('mizhou', this)">
+                <span class="pin-pulse"></span><span class="pin-label">密州</span>
+            </div>
+            <div class="map-pin" style="top: 28%; left: 68%;" onclick="updateJourney('hangzhou', this)">
+                <span class="pin-pulse"></span><span class="pin-label">杭州</span>
+            </div>
+            <div class="map-pin" style="top: 38%; left: 88%;" onclick="updateJourney('huangzhou', this)">
+                <span class="pin-pulse"></span><span class="pin-label">黄州</span>
+            </div>
+            <div class="map-pin" style="top: 52%; left: 69%;" onclick="updateJourney('huizhou', this)">
+                <span class="pin-pulse"></span><span class="pin-label">惠州</span>
+            </div>
+            <div class="map-pin" style="top: 76%; left: 40%;" onclick="updateJourney('hainan', this)">
+                <span class="pin-pulse"></span><span class="pin-label">儋州</span>
+            </div>
+            <div class="map-pin" style="top: 68%; left: 82%;" onclick="updateJourney('changzhou', this)">
+                <span class="pin-pulse"></span><span class="pin-label">常州</span>
+            </div>
+        </div>
+
+        <div class="journey-info-panel align-right inactive-slide" id="infoPanel">
+            <span class="panel-tag" id="panelTag">点击足迹</span>
+            <span class="panel-year" id="panelYear">浮生如梦</span>
+            <h2 class="panel-title" id="panelTitle">探索东坡足迹</h2>
+            <p class="panel-desc" id="panelDesc">点击地图上闪烁的红泥印记，跟随苏轼的脚步，重温他跌宕起伏的一生。</p>
+        </div>
+    </section>
+</div>
+
+<section class="character-section">
+    <!-- 增加 reveal-up 让标题滚动浮现 -->
+    <div class="section-header reveal-up" style="margin-bottom:5rem">
+        <span class="label" style="color:var(--ink-light);border-color:rgba(0,0,0,.1)">精 · 神 · 风 · 貌</span>
+        <h2 style="color:var(--ink-black)">东坡之魂</h2>
+        <div class="divider"></div>
+    </div>
+    <div class="char-grid">
+        <!-- 每个卡片都增加 reveal-up -->
+        <div class="char-card reveal-up">
+            <div class="seal-icon">狂</div>
+            <h3>豪放旷达</h3>
+            <p>苏轼一生数次贬谪，却始终不失旷达之气。他在密州出猎时的豪迈，在黄州赤壁的超然，无不彰显其"一蓑烟雨任平生"的人生境界。</p>
+            <div class="quote">「竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生。」</div>
+        </div>
+        <div class="char-card reveal-up">
+            <div class="seal-icon">才</div>
+            <h3>全才天赋</h3>
+            <p>诗、词、文、书、画无所不精。他开创豪放词派，与辛弃疾并称"苏辛"；散文位列"唐宋八大家"；书法名列"宋四家"之首。</p>
+            <div class="quote">「退笔如山未足珍，读书万卷始通神。」</div>
+        </div>
+        <div class="char-card reveal-up">
+            <div class="seal-icon">国</div>
+            <h3>忧国忧民</h3>
+            <p>无论身居庙堂还是谪居荒野，苏轼始终心系百姓。他治理水患、赈济灾民、兴修水利，在《密州出猎》中直抒报国豪情。</p>
+            <div class="quote">「会挽雕弓如满月，西北望，射天狼。」</div>
+        </div>
+        <div class="char-card reveal-up">
+            <div class="seal-icon">雅</div>
+            <h3>生活美学</h3>
+            <p>苏轼是中国历史上最懂生活的文人。他发明东坡肉、东坡饼，精于品茶，善酿美酒。即便在困苦的日子里，也能把日子过成诗。</p>
+            <div class="quote">「人间有味是清欢。」</div>
+        </div>
+        <div class="char-card reveal-up">
+            <div class="seal-icon">悟</div>
+            <h3>儒释道融通</h3>
+            <p>苏轼以儒家入世治国，以佛道出世养心。三教融通使他在逆境中拥有了超凡的精神韧性，这种通达达到了极高的哲学境界。</p>
+            <div class="quote">「回首向来萧瑟处，归去，也无风雨也无晴。」</div>
+        </div>
+        <div class="char-card reveal-up">
+            <div class="seal-icon">情</div>
+            <h3>重情重义</h3>
+            <p>苏轼与弟苏辙一生情深；悼念亡妻的《江城子》催人泪下；对友人更是肝胆相照，其真性情令后世无数文人敬仰。</p>
+            <div class="quote">「十年生死两茫茫，不思量，自难忘。」</div>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="seal-footer">蘇</div>
+    <p>江城子 · 密州出猎 — 词学研习网站</p>
+    <p style="margin-top:.5rem;opacity:.5">以墨为魂，以词为骨</p>
+</footer>
+
+<!-- ================== 伴学灵宝：国风书童 ================== -->
+<div id="companion-pet" class="companion-pet">
+    <div class="pet-bubble" id="pet-bubble"></div>
+    <div class="pet-avatar-container">
+        <!-- 如果是动图，把后缀改为 scholar.gif -->
+        <img src="scholar.png" alt="伴学书童" class="pet-image">
+    </div>
+</div>
+
+<script>
+// --- 地图交互数据与逻辑 ---
+const journeyData = {
+    meishan: { year: "1037年", title: "眉山降世", tag: "少年时期", desc: "苏轼生于四川眉山，字子瞻，号东坡居士。父苏洵，弟苏辙，三人并称“三苏”，同列“唐宋八大家”。少时便展现出非凡的文学天赋，博览群书。" },
+    kaifeng: { year: "1057年 - 1079年", title: "科举与诗案", tag: "仕途浮沉", desc: "二十一岁与弟苏辙同科进士及第。欧修惊叹：“此人他日文章必独步天下”。后因《乌台诗案》被诬入狱，几近丧命，成为他人生的重大转折点。" },
+    hangzhou: { year: "1071年", title: "外任杭州", tag: "勤政爱民", desc: "因与王安石政见不合，主动请求外调。任杭州通判期间，他关心民生、疏浚西湖，筑成著名的“苏堤”，并写下大量赞美江南的经典诗词。" },
+    mizhou: { year: "1075年", title: "密州出猎", tag: "词作诞生", desc: "知密州期间，苏轼率众出猎，意气风发。写下千古名篇《江城子·密州出猎》。“老夫聊发少年狂”——开创了宋代豪放词之先河。" },
+    huangzhou: { year: "1080–1084年", title: "黄州岁月", tag: "涅槃重生", desc: "贬谪黄州期间，苏轼于东坡耕种，自号“东坡居士”。写下《赤壁赋》《念奴娇·赤壁怀古》等不朽名作。苦难成就了他更深邃的哲思。" },
+    huizhou: { year: "1094年", title: "远谪惠州", tag: "岭南岁月", desc: "苏轼被贬至岭南惠州。在此地他依然旷达乐观，留下“日啖荔枝三百颗，不辞长作岭南人”的千古绝唱，并在此改良农具、引水入城。" },
+    hainan: { year: "1097–1100年", title: "再贬儋州", tag: "晚年流放", desc: "随后再被贬至海南儋州。在蛮荒之地依然办学堂、行医济民。“九死南荒吾不恨，兹游奇绝冠平生。”" },
+    changzhou: { year: "1101年", title: "归途长逝", tag: "一代文宗", desc: "获赦北归途中，病逝于常州，享年六十四岁。临终前留下“吾生无恶，死必不坠”之语。谥号“文忠”，后世尊为千古文豪。" }
+};
+
+const panel = document.getElementById('infoPanel');
+const pYear = document.getElementById('panelYear');
+const pTitle = document.getElementById('panelTitle');
+const pDesc = document.getElementById('panelDesc');
+const pTag = document.getElementById('panelTag');
+
+function updateJourney(cityKey, el) {
+    document.querySelectorAll('.map-pin').forEach(pin => pin.classList.remove('active'));
+    el.classList.add('active');
+
+    const data = journeyData[cityKey];
+    const leftPercent = parseFloat(el.style.left);
+    
+    panel.classList.remove('active');
+    panel.classList.add('inactive-slide');
+
+    setTimeout(() => {
+        if (leftPercent > 55) {
+            panel.classList.remove('align-right');
+            panel.classList.add('align-left');
+        } else {
+            panel.classList.remove('align-left');
+            panel.classList.add('align-right');
+        }
+
+        pYear.innerText = data.year;
+        pTitle.innerText = data.title;
+        pDesc.innerText = data.desc;
+        pTag.innerText = data.tag;
+        
+        panel.classList.remove('inactive-slide');
+        panel.classList.add('active');
+    }, 400); 
+}
+
+// --- 【新增】滚动浮现特效逻辑 (Scroll Reveal) ---
+document.addEventListener('DOMContentLoaded', () => {
+    // 地图面板初始延迟展开
+    setTimeout(() => {
+        panel.classList.add('active');
+        panel.classList.remove('inactive-slide');
+    }, 500);
+
+    // 设置 Intersection Observer 监听滚动出现
+    const revealElements = document.querySelectorAll('.reveal-up');
+    
+    const revealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // 当元素进入视口，添加 is-visible 类触发动画
+                entry.target.classList.add('is-visible');
+                // 触发后停止观察，确保动画只播放一次
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.15 // 元素露出 15% 时触发
+    });
+
+    revealElements.forEach(el => {
+        revealObserver.observe(el);
+    });
+});
+
+// ====== 伴学灵宝智能互动逻辑 ======
+window.addEventListener('DOMContentLoaded', function() {
+    const pet = document.getElementById('companion-pet');
+    const bubble = document.getElementById('pet-bubble');
+    
+    if(!pet || !bubble) return;
+
+    const url = window.location.href.toLowerCase();
+    let quotes = [];
+    
+    if (url.includes('analysis')) {
+        quotes = ["这句“亲射虎”写得真是英武！", "留意这里的典故哦，魏尚和冯唐是谁？", "词眼“狂”字，公子品出味道了吗？"];
+    } else if (url.includes('biography')) {
+        quotes = ["先生一生去过好多地方呢。", "乌台诗案是他人生最大的转折点。", "虽屡遭贬谪，先生依然乐观旷达！"];
+    } else if (url.includes('knowledge')) {
+        quotes = ["看看这满天星斗般的知识图谱！", "先生不仅词写得好，东坡肉也很好吃哦~", "点击这些发光的圆圈，有惊喜！"];
+    } else if (url.includes('quiz')) {
+        quotes = ["公子加油！这道题肯定难不倒你。", "温故而知新，做完记得看解析哦。", "若能满分过关，我给公子作揖啦！"];
+    } else if (url.includes('chat')) {
+        quotes = ["有什么不懂的，尽管问我！", "随时待命，公子请讲。", "关于先生的生平、诗词，我无所不知。"];
+    } else if (url.includes('summary')) {
+        quotes = ["千古风流人物，尽在词中。", "学完这首词，公子可有豪情顿生？", "一蓑烟雨任平生，咱们下节课见！"];
+    } else {
+        quotes = ["公子有礼了。", "读到‘左牵黄’，你感受到东坡的豪气了吗？", "学累了吗？点击我去知识问答聊聊天！"];
+    }
+
+    function showRandomQuote() {
+        const randomText = quotes[Math.floor(Math.random() * quotes.length)];
+        bubble.innerHTML = randomText;
+        bubble.classList.add('active');
+        setTimeout(() => { bubble.classList.remove('active'); }, 5000);
+    }
+
+    pet.addEventListener('click', function() {
+        if (url.includes('chat')) {
+            const input = document.getElementById('userInput');
+            if (input) input.focus(); 
+            bubble.innerHTML = "我在呢，公子请提问！"; 
+            bubble.classList.add('active'); 
+            setTimeout(() => bubble.classList.remove('active'), 3000); 
+        } else {
+            window.location.href = 'chat5.html';
+        }
+    });
+
+    setTimeout(() => {
+        bubble.innerHTML = quotes[0];
+        bubble.classList.add('active');
+        setTimeout(() => { bubble.classList.remove('active'); }, 5000);
+    }, 2000);
+
+    setInterval(showRandomQuote, 15000);
+});
+</script>
+
+</body>
+</html>
